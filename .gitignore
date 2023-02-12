@@ -1,9 +1,6 @@
 .idea
 __pycache__
-/datasets/*
-!/datasets/README.md
 runs/
-python_test/
 test/
 saves/
 result/
