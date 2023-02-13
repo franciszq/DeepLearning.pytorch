@@ -45,7 +45,7 @@ pip install -r requirements.txt
                 |-- SegmentationClass
                 `-- SegmentationObject
 ```
-最后，修改`coco.yaml`和`voc.yaml`文件中的`root`参数的值，分别为`${COCO_ROOT}/coco`和`${VOC_ROOT}/VOCdevkit/VOC2012/`
+最后，修改`coco.yaml`和`voc.yaml`文件中参数`root`的值，分别为`${COCO_ROOT}/coco`和`${VOC_ROOT}/VOCdevkit/VOC2012/`
 
 ## 训练
 
