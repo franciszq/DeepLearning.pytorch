@@ -1,42 +1,64 @@
 import os
-
 import numpy as np
-import torch
-import cv2
 import xml.dom.minidom as xdom
+
 from torch.utils.data import Dataset
+from utils.image_process import read_image
+from utils.yaml_tools import load_yaml
 
 
 class Voc(Dataset):
-    def __init__(self, cfg, transform=None):
-        super(Voc, self).__init__()
-        self.transform = transform
-        self.xmls_path = cfg["root"] + "Annotations"
-        self.images_path = cfg["root"] + "JPEGImages"
-        self.xmls = os.listdir(self.xmls_path)
-        self.class_index = dict((v, k) for k, v in enumerate(cfg["classes"]))
+    def __init__(self, root, train=True, transforms=None):
+        super().__init__()
+        # VOC数据集的根目录
+        self.root = root
+        # 对(image, target)的变换
+        self.transforms = transforms
+        xmls_root = os.path.join(root, "Annotations")
+        images_root = os.path.join(root, "JPEGImages")
+        images = self._load_train_val_data(train=train)
+        # 所有图片路径的列表
+        self.image_paths = [os.path.join(images_root, f"{e}.jpg") for e in images]
+        # 所有xml文件路径的列表
+        self.xml_paths = [os.path.join(xmls_root, f"{e}.xml") for e in images]
+        # voc类别名的列表
+        voc_classes = load_yaml("configs/voc.yaml")["classes"]
+        self.class2index = dict((v, k) for k, v in enumerate(voc_classes))
+
+    def _load_train_val_data(self, train=True):
+        if train:
+            # 加载训练集
+            train_txt = os.path.join(self.root, "ImageSets", "Main", "train.txt")
+            with open(train_txt, mode="r", encoding="utf-8") as f:
+                image_names = f.readline()
+            return image_names
+        else:
+            # 加载验证集
+            val_txt = os.path.join(self.root, "ImageSets", "Main", "val.txt")
+            with open(val_txt, mode="r", encoding="utf-8") as f:
+                image_names = f.readline()
+            return image_names
 
     def __len__(self):
-        return len(self.xmls)
+        return len(self.image_paths)
 
     def __getitem__(self, item):
-        xml_file = os.path.join(self.xmls_path, self.xmls[item])
-        image_path, target = self._parse_xml(xml_file)
-        image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # 获取第item个图片的路径和它对应的标签文件的路径
+        xml_path = self.xml_paths[item]
+        image_path = self.image_paths[item]
+        image = read_image(image_path)
+
+        target = self._parse_xml(xml_path)
         target = np.array(target, dtype=np.float32)
-        target = np.reshape(target, (-1, 5))
-        if self.transform:
-            image, target = self.transform(image, target)
+        target = np.reshape(target, (-1, 5))  # shape: (N, 5)  N是这张图片包含的目标数
+        if self.transforms:
+            image, target = self.transforms(image, target)
         return image, target
 
     def _parse_xml(self, xml):
         box_class_list = []
         DOMTree = xdom.parse(xml)
         annotation = DOMTree.documentElement
-        image_name = annotation.getElementsByTagName("filename")[0].childNodes[0].data
-        image_path = os.path.join(self.images_path, image_name)
-
         obj = annotation.getElementsByTagName("object")
         for o in obj:
             o_list = []
@@ -50,6 +72,7 @@ class Voc(Dataset):
             o_list.append(float(ymin))
             o_list.append(float(xmax))
             o_list.append(float(ymax))
-            o_list.append(self.class_index[obj_name])
+            o_list.append(self.class2index[obj_name])
             box_class_list.append(o_list)
-        return image_path, box_class_list
+        # [[xmin, ymin, xmax, ymax, class_index], ...]
+        return box_class_list
