@@ -1,5 +1,3 @@
-from utils.yaml_tools import load_yaml
-
 
 class Config:
     def __init__(self):
@@ -39,15 +37,22 @@ class Config:
     class _Train:
         # 训练参数
         def __init__(self):
-            self.epoch = 100
-            self.batch_size = 8
-            # 是否使用预训练权重
-            self.pretrained = False
             # 恢复训练时加载的checkpoint文件，""表示从epoch=0开始训练
             # 测试时也需要在这里指定checkpoint文件
             self.resume_training = ""
+            # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
+            self.last_epoch = -1
+
+            self.epoch = 100
+            self.batch_size = 16
+            # 初始学习率
+            self.init_lr = 1e-4
+            # warm up轮数
+            self.warmup_epochs = 10
+            # 是否使用预训练权重
+            self.pretrained = False
             # 模型保存间隔
-            self.save_interval = 1
+            self.save_interval = 5
             # 每隔多少epoch在验证集上验证一次
             self.eval_interval = 1
             # 保存模型的文件夹

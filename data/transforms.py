@@ -1,4 +1,4 @@
-import numpy as np
+import random
 import torch
 import torchvision.transforms.functional as F
 
@@ -38,3 +38,24 @@ class Resize:
         target /= self.size[0]    # 坐标归一化到[0, 1]
         return image, target
 
+
+class ImageColorJitter:
+    """
+    随机改变一张图片的对比度、饱和度、亮度和色调
+    """
+    def __init__(self):
+        # 对比度
+        self.random_contrast_factor = random.uniform(0.5, 1.5)
+        # 饱和度
+        self.random_saturation_factor = random.uniform(0.8, 1.2)
+        # 亮度
+        self.random_brightness_factor = random.uniform(0.8, 1.2)
+        # 色调
+        self.random_hue_factor = random.uniform(-0.25, 0.25)
+
+    def __call__(self, image, target):
+        image = F.adjust_contrast(image, self.random_contrast_factor)
+        image = F.adjust_saturation(image, self.random_saturation_factor)
+        image = F.adjust_brightness(image, self.random_brightness_factor)
+        image = F.adjust_hue(image, self.random_hue_factor)
+        return image, target

@@ -17,7 +17,8 @@ class PublicDataLoader:
 
         self.train_transforms = [
             T.Resize(self.input_size),
-            T.ToTensor()
+            T.ToTensor(),
+            T.ImageColorJitter(),
         ]
 
         self.val_transforms = [

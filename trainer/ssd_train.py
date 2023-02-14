@@ -13,6 +13,7 @@ from models.ssd import SSD
 from trainer.base import Pipeline
 from utils.anchor import generate_ssd_anchor
 from utils.ckpt import CheckPoint
+from utils.lr_scheduler import warm_up_scheduler
 from utils.metrics import MeanMetric
 
 
@@ -20,8 +21,13 @@ class SSDTrainer(Pipeline):
     def __init__(self, cfg: Config, device):
         self.device = device
         self.cfg = cfg
+        self.last_epoch = cfg.train.last_epoch
         self.dataset_name = cfg.dataset.dataset_name
         self.batch_size = cfg.train.batch_size
+
+        self.warmup_epochs = cfg.train.warmup_epochs
+        self.init_lr = cfg.train.init_lr
+
         self.input_image_size = cfg.arch.input_size
         self.resume_training_weights = cfg.train.resume_training
         self.optimizer_name = cfg.optimizer.name
@@ -67,13 +73,18 @@ class SSDTrainer(Pipeline):
 
         # 创建优化器
         if self.optimizer_name == 'Adam':
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.init_lr)
         else:
-            raise ValueError(f"不支持{self.optimizer_name}优化器")
+            raise ValueError(f"{self.optimizer_name} is not supported")
+
+        # 设置优化器
+        self.lr_scheduler = warm_up_scheduler(self.optimizer, warmup_epochs=self.warmup_epochs,
+                                              last_epoch=self.last_epoch)
 
     def _load_data(self, *args, **kwargs):
         self.train_dataloader, self.val_dataloader = SSDLoader(self.cfg, self.dataset_name, self.batch_size,
-                                                               self.input_image_size[1:], self.anchors.copy()).__call__()
+                                                               self.input_image_size[1:],
+                                                               self.anchors.copy()).__call__()
 
     def _initialize_model(self, *args, **kwargs):
         self.model = SSD(self.cfg)
@@ -91,7 +102,6 @@ class SSDTrainer(Pipeline):
         loss_mean = MeanMetric()
         loc_loss_mean = MeanMetric()  # 位置损失
         conf_loss_mean = MeanMetric()  # 分类损失
-        start_epoch = 0
 
         if self.tensorboard_on:
             writer = SummaryWriter()
@@ -104,12 +114,13 @@ class SSDTrainer(Pipeline):
         if self.resume_training_weights != "":
             # 从checkpoint恢复训练
             _, _, _, start_epoch = self.load_weights()
+            assert self.last_epoch == start_epoch, f"last epoch should be {start_epoch}, but got {self.last_epoch}"
             print(f"成功加载权重文件{self.resume_training_weights}！")
 
         if self.mixed_precision:
             scaler = torch.cuda.amp.GradScaler()
 
-        for epoch in range(start_epoch + 1, self.total_epoch + 1):
+        for epoch in range(self.last_epoch + 1, self.total_epoch + 1):
             # 切换为训练模式
             self.model.train()
             # 重置
@@ -140,17 +151,24 @@ class SSDTrainer(Pipeline):
                     loc_loss_mean.update(l_loss.item())
                     conf_loss_mean.update(c_loss.item())
 
+                    # 当前学习率
+                    current_lr = self.optimizer.state_dict()['param_groups'][0]['lr']
+
                     if self.tensorboard_on:
                         writer.add_scalar(tag="Loss", scalar_value=loss_mean.result(),
-                                          global_step=(epoch - 1) * len(self.train_dataloader) + i)
+                                          global_step=epoch * len(self.train_dataloader) + i)
                         writer.add_scalar(tag="Loc Loss", scalar_value=loc_loss_mean.result(),
-                                          global_step=(epoch - 1) * len(self.train_dataloader) + i),
+                                          global_step=epoch * len(self.train_dataloader) + i),
                         writer.add_scalar(tag="Conf Loss", scalar_value=conf_loss_mean.result(),
-                                          global_step=(epoch - 1) * len(self.train_dataloader) + i)
+                                          global_step=epoch * len(self.train_dataloader) + i)
+                        writer.add_scalar(tag="Learning rate", scalar_value=current_lr,
+                                          global_step=epoch * len(self.train_dataloader) + i)
 
                     pbar.set_postfix({"loss": "{}".format(loss_mean.result()),
                                       "loc_loss": "{:.4f}".format(loc_loss_mean.result()),
                                       "conf_loss": "{:.4f}".format(conf_loss_mean.result())})
+
+            self.lr_scheduler.step()
 
             if epoch % self.eval_interval == 0:
                 pass
