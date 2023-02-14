@@ -23,10 +23,3 @@ class Pipeline(metaclass=ABCMeta):
     def evaluate(self, *args, **kwargs):
         pass
 
-    @abstractmethod
-    def test(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def predict(self, *args, **kwargs):
-        pass

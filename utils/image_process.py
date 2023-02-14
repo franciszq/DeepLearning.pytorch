@@ -49,7 +49,7 @@ def reverse_letter_box(h, w, input_size, boxes, xywh=True):
     letter_box的逆变换
     :param h: 输入网络的图片的原始高度
     :param w: 输入网络的图片的原始宽度
-    :param input_size: 网络的固定输入图片大小
+    :param input_size: List or Tuple 网络输入图片的固定大小
     :param boxes: Tensor, shape: (..., 4(cx, cy, w, h))
     :param xywh: Bool, True：boxes是(cx, cy, w, h)格式, False: boxes是(xmin, ymin, xmax, ymax)格式
     :return: Tensor, shape: (..., 4(xmin, ymin, xmax, ymax))
@@ -59,12 +59,13 @@ def reverse_letter_box(h, w, input_size, boxes, xywh=True):
         new_boxes = torch.cat((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), dim=-1)
     else:
         new_boxes = boxes.clone()
-    new_boxes *= input_size
+    new_boxes[..., ::2] *= input_size[1]
+    new_boxes[..., 1::2] *= input_size[0]
 
-    scale = max(h / input_size, w / input_size)
+    scale = max(h / input_size[0], w / input_size[1])
     # 获取padding值
-    top = (input_size - h / scale) // 2
-    left = (input_size - w / scale) // 2
+    top = (input_size[0] - h / scale) // 2
+    left = (input_size[1] - w / scale) // 2
     # 减去padding值，就是相对于原始图片的原点位置
     new_boxes[..., 0] -= left
     new_boxes[..., 2] -= left

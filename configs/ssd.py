@@ -89,5 +89,7 @@ class Config:
 
     class _Decode:
         def __init__(self):
-            self.test_images_dir = "test"
             self.test_results = "result"
+            self.num_max_output_boxes = 100
+            self.nms_threshold = 0.5
+            self.confidence_threshold = 0.65

@@ -33,7 +33,6 @@ class SSDTrainer(Pipeline):
         self.optimizer_name = cfg.optimizer.name
         self.total_epoch = cfg.train.epoch
         self.num_workers = cfg.train.num_workers
-        self.test_images_dir = cfg.decode.test_images_dir
         self.eval_interval = cfg.train.eval_interval
         self.save_interval = cfg.train.save_interval
         self.save_path = cfg.train.save_path
@@ -189,8 +188,3 @@ class SSDTrainer(Pipeline):
     def evaluate(self, *args, **kwargs):
         pass
 
-    def test(self, *args, **kwargs):
-        pass
-
-    def predict(self, *args, **kwargs):
-        pass

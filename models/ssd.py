@@ -4,7 +4,7 @@ from configs.ssd import Config
 
 
 class VGG(nn.Module):
-    def __init__(self, batch_norm=False):
+    def __init__(self, batch_norm=False, pretrained=True):
         super().__init__()
         self.batch_norm = batch_norm
         model_params = [64, 64, "M", 128, 128, "M", 256, 256, 256, "C",
@@ -33,6 +33,14 @@ class VGG(nn.Module):
         ]
 
         self.layers = nn.ModuleList(layers)
+        if pretrained:
+            self._load_pretrained("https://download.pytorch.org/models/vgg16_bn-6c64b313.pth")
+
+    def _load_pretrained(self, url):
+        state_dict = torch.hub.load_state_dict_from_url(url)
+        state_dict = {k.replace('features.', ''): v for k, v in state_dict.items()}
+        self.load_state_dict(state_dict, strict=False)
+        print("Loaded ImageNet1K weights")
 
     def forward(self, x):
         """
@@ -108,7 +116,7 @@ class SSD(nn.Module):
         self.num_boxes_per_pixel = [len(ar) + 1 for ar in cfg.arch.aspect_ratios]
         self.feature_channels = cfg.arch.feature_channels
 
-        self.backbone = VGG(batch_norm=True)
+        self.backbone = VGG(batch_norm=True, pretrained=False)
         self.l2_norm = L2Normalize(n_channels=512, scale=20)
         self.extras = ExtraLayer(c_in=1024)
         self.locs, self.confs = self._make_locs_and_confs()
