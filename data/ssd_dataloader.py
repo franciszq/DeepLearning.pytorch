@@ -1,29 +1,33 @@
 import torch
 
 from data.dataloader import PublicDataLoader
+from utils.anchor import generate_ssd_anchor
 from utils.bboxes import jaccard
+from configs.ssd import Config
 
 
 class UpdateClassIndices:
     def __call__(self, image, target):
-        target[..., -1] += 1
+        target[..., -1] += 1  # 背景的label是0
         return image, target
 
 
 class AssignGTToDefaultBoxes:
-    def __init__(self, cfg):
-        self.default_boxes = DefaultBoxes(cfg).__call__(xyxy=True)  # shape: (8732, 4)
-        self.threshold = cfg["Loss"]["overlap_thresh"]
+    def __init__(self, cfg: Config):
+        self.default_boxes = generate_ssd_anchor(input_image_shape=cfg.arch.input_size[1:],
+                                                 anchor_sizes=cfg.arch.anchor_size,
+                                                 feature_shapes=cfg.arch.feature_shapes,
+                                                 aspect_ratios=cfg.arch.aspect_ratios)  # shape: (8732, 4)
+        # To tensor
+        self.default_boxes = torch.from_numpy(self.default_boxes)
+        self.threshold = cfg.loss.overlap_threshold
 
     def __call__(self, image, target):
         """
-
-        Args:
-            image:
-            target: torch.Tensor, shape: (N, 5)
-
-        Returns:
-
+        将一个Nx5的Tensor变成一个8732x5的Tensor
+        :param image: torch.Tensor, 图片
+        :param target: torch.Tensor, shape: (N, 5(xmin, ymin, xmax, ymax, label))
+        :return: image, target_out [shape: (8732, 5(center_x, center_y, w, h, label))]
         """
         boxes = target[:, :-1]
         labels_in = target[:, -1].long()
@@ -62,7 +66,7 @@ class AssignGTToDefaultBoxes:
 
 
 class SSDLoader(PublicDataLoader):
-    def __init__(self, dataset_name: str, voc_root, coco_root, batch_size, input_size):
+    def __init__(self, cfg: Config, dataset_name: str, voc_root, coco_root, batch_size, input_size):
         super().__init__(dataset_name, voc_root, coco_root, batch_size, input_size)
         self.train_transforms.append(UpdateClassIndices())
         self.train_transforms.append(AssignGTToDefaultBoxes(cfg))

@@ -6,6 +6,7 @@ class Config:
         self.arch = self._Arch()
         self.dataset = self._Dataset()
         self.train = self._Train()
+        self.loss = self._Loss()
         self.optimizer = self._Optimizer()
         self.log = self._Log()
         self.decode = self._Decode()
@@ -63,6 +64,16 @@ class Config:
             self.mixed_precision = True
             # 多少个子进程用于数据加载
             self.num_workers = 0
+
+    class _Loss:
+        # 损失函数
+        def __init__(self):
+            self.alpha = 0.25
+            self.gamma = 2.0
+            self.reg_loss_weight = 0.5
+            self.overlap_threshold = 0.5
+            self.neg_pos = 3
+            self.variance = [0.1, 0.2]
 
     class _Optimizer:
         # 优化器
