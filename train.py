@@ -25,10 +25,6 @@ def main():
 
     if args.mode == "train":
         m.train()
-    elif args.mode == "test":
-        m.test()
-    elif args.mode == "predict":
-        m.predict()
     else:
         raise ValueError(f"不支持的模式：{args.mode}")
 

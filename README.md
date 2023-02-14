@@ -49,5 +49,14 @@ pip install -r requirements.txt
 
 ## 训练
 
+```commandline
+python train.py --cfg configs/ssd.py
+```
+
+## 在图片上测试
+```commandline
+python detect.py --cfg configs/ssd.py
+```
+
 ## 参考
 - https://github.com/calmisential/PyTorch_Object_Detection
