@@ -153,9 +153,9 @@ class SSD(nn.Module):
             conf.append(c(x))
 
         # shape: (batch, 34928)
-        loc = torch.cat(tensors=[torch.reshape(o, shape=(o.size()[0], -1)) for o in loc], dim=1)
+        loc = torch.cat(tensors=[torch.reshape(o, shape=(o.size(0), -1)) for o in loc], dim=1)
         # shape: (batch, 183372)
-        conf = torch.cat(tensors=[torch.reshape(o, shape=(o.size()[0], -1)) for o in conf], dim=1)
+        conf = torch.cat(tensors=[torch.reshape(o, shape=(o.size(0), -1)) for o in conf], dim=1)
 
         loc = torch.reshape(loc, shape=(loc.shape[0], -1, 4))  # (batch, 8732, 4)
         conf = torch.reshape(conf, shape=(conf.shape[0], -1, self.num_classes))  # (batch, 8732, self.num_classes)

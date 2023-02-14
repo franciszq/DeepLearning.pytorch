@@ -16,7 +16,7 @@ class Config:
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
             self.num_classes = 20
             # 输入图片大小：(C, H, W)
-            self.input_size = (3, 368, 368)
+            self.input_size = (3, 300, 300)
             # 先验框的宽高比
             self.aspect_ratios = [[1, 2, 1.0 / 2],
                                   [1, 2, 1.0 / 2, 3, 1.0 / 3],
@@ -35,12 +35,6 @@ class Config:
         def __init__(self):
             # 数据集名称，"voc"或者"coco"
             self.dataset_name = "voc"
-            # 数据集的配置文件
-            cfgs = {
-                "coco": load_yaml("configs/coco.yaml"),
-                "voc": load_yaml("configs/voc.yaml")
-            }
-            self.dataset_config = cfgs[self.dataset_name]
 
     class _Train:
         # 训练参数

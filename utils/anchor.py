@@ -47,7 +47,8 @@ def generate_ssd_anchor(input_image_shape, anchor_sizes, feature_shapes, aspect_
         # 对于每一种宽高比例，都需要一个对应的先验框
         # shape: (feature_h**2, 4*(len(aspect_ratios[i])+1))
         anchor = np.tile(anchor, (1, (len(aspect_ratios[i]) + 1) * 2))
-        # xmin, ymin, xmax, ymax
+
+        # 转换为xmin, ymin, xmax, ymax格式
         anchor[:, ::4] -= half_box_widths  # shape: (feature_h**2, len(aspect_ratios[i])+1)
         anchor[:, 1::4] -= half_box_heights
         anchor[:, 2::4] += half_box_widths
@@ -58,7 +59,8 @@ def generate_ssd_anchor(input_image_shape, anchor_sizes, feature_shapes, aspect_
         anchor[:, 1::2] /= image_h
         anchor = np.clip(anchor, a_min=0.0, a_max=1.0)
         anchor = np.reshape(anchor, (-1, 4))
+
         anchors.append(anchor)
 
     anchors = np.concatenate(anchors, axis=0)  # (8732, 4)
-    return anchors
+    return anchors.astype(dtype=np.float32)

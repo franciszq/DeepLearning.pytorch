@@ -7,36 +7,40 @@ from utils.image_process import read_image
 from utils.yaml_tools import load_yaml
 
 
+def get_voc_root_and_classes(voc_yaml):
+    cfg_dict = load_yaml(voc_yaml)
+    return cfg_dict["root"], cfg_dict["classes"]
+
+
 class Voc(Dataset):
-    def __init__(self, root, train=True, transforms=None):
+    def __init__(self, train=True, transforms=None):
         super().__init__()
-        # VOC数据集的根目录
-        self.root = root
+        # VOC数据集的根目录和类别名
+        self.root, self.class_names = get_voc_root_and_classes("configs/voc.yaml")
         # 对(image, target)的变换
         self.transforms = transforms
-        xmls_root = os.path.join(root, "Annotations")
-        images_root = os.path.join(root, "JPEGImages")
+        xmls_root = os.path.join(self.root, "Annotations")
+        images_root = os.path.join(self.root, "JPEGImages")
         images = self._load_train_val_data(train=train)
         # 所有图片路径的列表
         self.image_paths = [os.path.join(images_root, f"{e}.jpg") for e in images]
         # 所有xml文件路径的列表
         self.xml_paths = [os.path.join(xmls_root, f"{e}.xml") for e in images]
         # voc类别名的列表
-        voc_classes = load_yaml("configs/voc.yaml")["classes"]
-        self.class2index = dict((v, k) for k, v in enumerate(voc_classes))
+        self.class2index = dict((v, k) for k, v in enumerate(self.class_names))
 
     def _load_train_val_data(self, train=True):
         if train:
             # 加载训练集
             train_txt = os.path.join(self.root, "ImageSets", "Main", "train.txt")
             with open(train_txt, mode="r", encoding="utf-8") as f:
-                image_names = f.readline()
+                image_names = f.read().splitlines()
             return image_names
         else:
             # 加载验证集
             val_txt = os.path.join(self.root, "ImageSets", "Main", "val.txt")
             with open(val_txt, mode="r", encoding="utf-8") as f:
-                image_names = f.readline()
+                image_names = f.read().splitlines()
             return image_names
 
     def __len__(self):

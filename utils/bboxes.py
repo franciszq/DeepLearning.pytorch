@@ -1,4 +1,27 @@
 import torch
+import numpy as np
+
+
+def xyxy_to_xywh(coords, center=True):
+    """
+    坐标变换
+    :param coords: numpy.ndarray, 最后一维的4个数是坐标
+    :param center: True表示将(xmin, ymin, xmax, ymax)转变为(center_x, center_y, w, h)格式
+                   False表示将(xmin, ymin, xmax, ymax)转变为(xmin, ymin, w, h)格式
+    :return: numpy.ndarray, 与输入的形状一致
+    """
+    xmin = coords[..., 0:1]
+    ymin = coords[..., 1:2]
+    xmax = coords[..., 2:3]
+    ymax = coords[..., 3:4]
+    w = xmax - xmin
+    h = ymax - ymin
+    if center:
+        center_x = (xmin + xmax) / 2
+        center_y = (ymin + ymax) / 2
+        return np.concatenate((center_x, center_y, w, h), axis=-1)
+    else:
+        return np.concatenate((xmin, ymin, w, h), axis=-1)
 
 
 def intersect(box_a, box_b):

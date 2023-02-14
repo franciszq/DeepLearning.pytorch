@@ -5,18 +5,14 @@ from data.voc import Voc
 
 
 class PublicDataLoader:
-    def __init__(self, dataset_name: str, voc_root, coco_root, batch_size, input_size):
+    def __init__(self, dataset_name: str, batch_size, input_size):
         """
         :param dataset_name: str, 'voc' or 'coco'
-        :param voc_root: voc数据集的根目录
-        :param coco_root: coco数据集的根目录
         :param batch_size:
         :param input_size: tuple or list (h, w)
         """
         self.dataset_name = dataset_name
         self.batch_size = batch_size
-        self.voc_root = voc_root
-        self.coco_root = coco_root
         self.input_size = input_size
 
         self.train_transforms = [
@@ -29,8 +25,9 @@ class PublicDataLoader:
             T.ToTensor()
         ]
 
-    def _get_voc(self, train, transforms):
-        return Voc(root=self.voc_root, train=train, transforms=transforms)
+    @staticmethod
+    def _get_voc(train, transforms):
+        return Voc(train=train, transforms=transforms)
 
     def __call__(self, *args, **kwargs):
         if self.dataset_name == 'voc':

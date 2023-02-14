@@ -13,11 +13,8 @@ class UpdateClassIndices:
 
 
 class AssignGTToDefaultBoxes:
-    def __init__(self, cfg: Config):
-        self.default_boxes = generate_ssd_anchor(input_image_shape=cfg.arch.input_size[1:],
-                                                 anchor_sizes=cfg.arch.anchor_size,
-                                                 feature_shapes=cfg.arch.feature_shapes,
-                                                 aspect_ratios=cfg.arch.aspect_ratios)  # shape: (8732, 4)
+    def __init__(self, cfg: Config, anchors):
+        self.default_boxes = anchors  # shape: (8732, 4)
         # To tensor
         self.default_boxes = torch.from_numpy(self.default_boxes)
         self.threshold = cfg.loss.overlap_threshold
@@ -66,9 +63,9 @@ class AssignGTToDefaultBoxes:
 
 
 class SSDLoader(PublicDataLoader):
-    def __init__(self, cfg: Config, dataset_name: str, voc_root, coco_root, batch_size, input_size):
-        super().__init__(dataset_name, voc_root, coco_root, batch_size, input_size)
+    def __init__(self, cfg: Config, dataset_name: str, batch_size, input_size, anchors):
+        super().__init__(dataset_name, batch_size, input_size)
         self.train_transforms.append(UpdateClassIndices())
-        self.train_transforms.append(AssignGTToDefaultBoxes(cfg))
+        self.train_transforms.append(AssignGTToDefaultBoxes(cfg, anchors))
         self.val_transforms.append(UpdateClassIndices())
-        self.val_transforms.append(AssignGTToDefaultBoxes(cfg))
+        self.val_transforms.append(AssignGTToDefaultBoxes(cfg, anchors))
