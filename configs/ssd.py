@@ -11,6 +11,7 @@ class Config:
 
     class _Arch:
         def __init__(self):
+            self.backbone = "vgg16"   # 'vgg16' or 'mobilenetv1'
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
             self.num_classes = 20
             # 输入图片大小：(C, H, W)
@@ -48,7 +49,7 @@ class Config:
             # 初始学习率
             self.init_lr = 1e-4
             # warm up轮数
-            self.warmup_epochs = 10
+            self.warmup_epochs = 0
             # 是否使用预训练权重
             self.pretrained = False
             # 模型保存间隔

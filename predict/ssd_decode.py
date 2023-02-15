@@ -3,10 +3,8 @@ import torch.nn.functional as F
 from torchvision.ops import batched_nms
 import torchvision.transforms.functional as TF
 
-from models.ssd import SSD
 from utils.anchor import generate_ssd_anchor
 from utils.bboxes import xyxy_to_xywh
-from utils.ckpt import CheckPoint
 from utils.image_process import reverse_letter_box, read_image, letter_box
 from configs.ssd import Config
 from utils.visualize import show_detection_results

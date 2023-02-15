@@ -59,4 +59,5 @@ python detect.py --cfg configs/ssd.py
 ```
 
 ## 参考
-- https://github.com/calmisential/PyTorch_Object_Detection
+- https://github.com/bubbliiiing/yolo3-pytorch
+- https://github.com/bubbliiiing/ssd-pytorch

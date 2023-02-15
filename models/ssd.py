@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from configs.ssd import Config
+from models.mobilenet import MobileNetV1
 
 
 class VGG(nn.Module):
@@ -69,8 +70,8 @@ class ExtraLayer(nn.Module):
         self.conv5 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
         self.conv6 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=0)
 
-        self.conv7 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
-        self.conv8 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=0)
+        self.conv7 = nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=0)
+        self.conv8 = nn.Conv2d(128, 256, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -112,11 +113,17 @@ class SSD(nn.Module):
     def __init__(self, cfg: Config):
         super(SSD, self).__init__()
         self.num_classes = cfg.arch.num_classes + 1
+        self.backbone_name = cfg.arch.backbone.lower()
         # 每个stage分支输出的feature map中每个像素位置处的先验框数量
         self.num_boxes_per_pixel = [len(ar) + 1 for ar in cfg.arch.aspect_ratios]
         self.feature_channels = cfg.arch.feature_channels
 
-        self.backbone = VGG(batch_norm=True, pretrained=False)
+        if self.backbone_name == "vgg16":
+            self.backbone = VGG(batch_norm=True, pretrained=True)
+        elif self.backbone_name == "mobilenetv1":
+            self.backbone = MobileNetV1()
+        else:
+            raise ValueError(f"Invalid backbone name: {self.backbone_name}")
         self.l2_norm = L2Normalize(n_channels=512, scale=20)
         self.extras = ExtraLayer(c_in=1024)
         self.locs, self.confs = self._make_locs_and_confs()

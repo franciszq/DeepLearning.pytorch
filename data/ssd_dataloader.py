@@ -1,7 +1,6 @@
 import torch
 
 from data.dataloader import PublicDataLoader
-from utils.anchor import generate_ssd_anchor
 from utils.bboxes import jaccard
 from configs.ssd import Config
 
