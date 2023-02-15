@@ -30,7 +30,7 @@ class Resize:
     def __call__(self, image, target):
         image, scale, paddings = letter_box(image, self.size)
         top, bottom, left, right = paddings
-        target *= scale
+        target[:, 0:-1] *= scale
         # xmin, xmax增加left像素
         target[:, 0:4:2] += left
         # 归一化
