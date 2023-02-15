@@ -27,6 +27,8 @@ class SSDTrainer(Pipeline):
 
         self.warmup_epochs = cfg.train.warmup_epochs
         self.initial_lr = cfg.train.initial_lr
+        self.milestones = cfg.train.milestones
+        self.gamma = cfg.train.gamma
 
         self.input_image_size = cfg.arch.input_size
         self.resume_training_weights = cfg.train.resume_training
@@ -79,6 +81,7 @@ class SSDTrainer(Pipeline):
 
         # 设置优化器
         self.lr_scheduler = warm_up_scheduler(self.optimizer, warmup_epochs=self.warmup_epochs,
+                                              milestones=self.milestones, gamma=self.gamma,
                                               last_epoch=self.last_epoch)
 
     def _load_data(self, *args, **kwargs):

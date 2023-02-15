@@ -47,9 +47,12 @@ class Config:
             self.epoch = 100
             self.batch_size = 16
             # 初始学习率
-            self.initial_lr = 1e-4
+            self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
+            self.milestones = [5, 15]
+            self.gamma = 0.2
+
             # 是否使用预训练权重
             self.pretrained = False
             # 模型保存间隔
