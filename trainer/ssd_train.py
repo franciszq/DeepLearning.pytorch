@@ -155,11 +155,11 @@ class SSDTrainer(Pipeline):
                     current_lr = self.optimizer.state_dict()['param_groups'][0]['lr']
 
                     if self.tensorboard_on:
-                        writer.add_scalar(tag="Train/loss", scalar_value=loss_mean.result(),
+                        writer.add_scalar(tag="Train/loss", scalar_value=total_loss.item(),
                                           global_step=epoch * len(self.train_dataloader) + i)
-                        writer.add_scalar(tag="Train/loc loss", scalar_value=loc_loss_mean.result(),
+                        writer.add_scalar(tag="Train/loc loss", scalar_value=l_loss.item(),
                                           global_step=epoch * len(self.train_dataloader) + i),
-                        writer.add_scalar(tag="Train/conf loss", scalar_value=conf_loss_mean.result(),
+                        writer.add_scalar(tag="Train/conf loss", scalar_value=c_loss.item(),
                                           global_step=epoch * len(self.train_dataloader) + i)
                         writer.add_scalar(tag="Learning rate", scalar_value=current_lr,
                                           global_step=epoch * len(self.train_dataloader) + i)
