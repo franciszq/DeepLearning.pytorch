@@ -55,10 +55,6 @@ class Voc(Dataset):
         target = self._parse_xml(xml_path)
         target = np.array(target, dtype=np.float32)
         target = np.reshape(target, (-1, 5))  # shape: (N, 5)  N是这张图片包含的目标数
-        # 坐标归一化
-        h, w, _ = image.shape
-        target[:, 0:4:2] /= w
-        target[:, 1:4:2] /= h
         if self.transforms:
             image, target = self.transforms(image, target)
         return image, target

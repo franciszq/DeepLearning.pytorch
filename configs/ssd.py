@@ -11,7 +11,7 @@ class Config:
 
     class _Arch:
         def __init__(self):
-            self.backbone = "vgg16"   # 'vgg16' or 'mobilenetv1'
+            self.backbone = "mobilenetv1"   # 'vgg16' or 'mobilenetv1'
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
             self.num_classes = 20
             # 输入图片大小：(C, H, W)
@@ -47,13 +47,13 @@ class Config:
             self.epoch = 100
             self.batch_size = 16
             # 初始学习率
-            self.init_lr = 1e-4
+            self.initial_lr = 1e-4
             # warm up轮数
             self.warmup_epochs = 0
             # 是否使用预训练权重
             self.pretrained = False
             # 模型保存间隔
-            self.save_interval = 5
+            self.save_interval = 2
             # 每隔多少epoch在验证集上验证一次
             self.eval_interval = 1
             # 保存模型的文件夹
@@ -93,4 +93,4 @@ class Config:
             self.test_results = "result"
             self.num_max_output_boxes = 100
             self.nms_threshold = 0.5
-            self.confidence_threshold = 0.65
+            self.confidence_threshold = 0.6

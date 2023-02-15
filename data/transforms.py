@@ -32,10 +32,12 @@ class Resize:
         top, bottom, left, right = paddings
         target *= scale
         # xmin, xmax增加left像素
-        target[:, ::2] += left
+        target[:, 0:4:2] += left
+        # 归一化
+        target[:, 0:4:2] /= self.size[1]
         # ymin, ymax增加top像素
-        target[:, 1::2] += top
-        target /= self.size[0]    # 坐标归一化到[0, 1]
+        target[:, 1:4:2] += top
+        target[:, 1:4:2] /= self.size[0]
         return image, target
 
 

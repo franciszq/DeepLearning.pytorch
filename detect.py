@@ -7,7 +7,7 @@ from configs import get_cfg
 from models.ssd import SSD
 from predict import ssd_decode
 
-WEIGHTS = "saves/ssd_voc_epoch-0.pth"
+WEIGHTS = "saves/ssd_voc_epoch-50.pth"
 IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg"]
 
 

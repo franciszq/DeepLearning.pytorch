@@ -26,7 +26,7 @@ class SSDTrainer(Pipeline):
         self.batch_size = cfg.train.batch_size
 
         self.warmup_epochs = cfg.train.warmup_epochs
-        self.init_lr = cfg.train.init_lr
+        self.initial_lr = cfg.train.initial_lr
 
         self.input_image_size = cfg.arch.input_size
         self.resume_training_weights = cfg.train.resume_training
@@ -72,7 +72,8 @@ class SSDTrainer(Pipeline):
 
         # 创建优化器
         if self.optimizer_name == 'Adam':
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.init_lr)
+            self.optimizer = torch.optim.Adam([{"params": self.model.parameters(),
+                                                'initial_lr': self.initial_lr}], lr=self.initial_lr)
         else:
             raise ValueError(f"{self.optimizer_name} is not supported")
 
@@ -119,7 +120,7 @@ class SSDTrainer(Pipeline):
         if self.mixed_precision:
             scaler = torch.cuda.amp.GradScaler()
 
-        for epoch in range(self.last_epoch + 1, self.total_epoch + 1):
+        for epoch in range(self.last_epoch + 1, self.total_epoch):
             # 切换为训练模式
             self.model.train()
             # 重置
