@@ -118,7 +118,7 @@ class SSDTrainer(Pipeline):
             # 从checkpoint恢复训练
             _, _, _, start_epoch = self.load_weights()
             assert self.last_epoch == start_epoch, f"last epoch should be {start_epoch}, but got {self.last_epoch}"
-            print(f"成功加载权重文件{self.resume_training_weights}！")
+            print(f"After loading weights from {self.resume_training_weights}, it will resume training soon.")
 
         if self.mixed_precision:
             scaler = torch.cuda.amp.GradScaler()

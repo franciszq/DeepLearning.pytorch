@@ -56,7 +56,7 @@ class MultiBoxLoss:
         _, con_idx = con_neg.sort(1, descending=True)
         _, con_rank = con_idx.sort(1)
         # 负样本的数量是正样本的self.negpos_ratio倍，但不能超过8732
-        neg_num = torch.clamp(self.negpos_ratio * pos_num, max=mask.size(1)).unsqueeze(1)  # (batch_size, 1)
+        neg_num = torch.clamp(self.negpos_ratio * pos_num, max=mask.size(1)).unsqueeze(-1)  # (batch_size, 1)
         neg_mask = con_rank < neg_num  # (batch_size, 8732)
 
         # 总的分类损失包括：正样本的分类损失，选取的负样本的分类损失

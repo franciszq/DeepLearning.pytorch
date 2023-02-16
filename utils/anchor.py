@@ -1,3 +1,6 @@
+import itertools
+from math import sqrt
+
 import numpy as np
 
 
@@ -10,6 +13,35 @@ def generate_ssd_anchor(input_image_shape, anchor_sizes, feature_shapes, aspect_
     :param aspect_ratios:
     :return:
     """
+    image_h, image_w = input_image_shape
+    anchors = []
+    for i, s in enumerate(feature_shapes):
+        sk1 = anchor_sizes[i] / image_w
+        sk2 = anchor_sizes[i+1] / image_h
+        sk3 = sqrt(sk1 * sk2)
+        all_sizes = [(sk1, sk1), (sk3, sk3)]
+
+        for ar in aspect_ratios[i]:
+            if ar != 1:
+                all_sizes.append((sk1 * sqrt(ar), sk1 / sqrt(ar)))
+
+        for w, h in all_sizes:
+            for m, n in itertools.product(range(s), repeat=2):
+                cx, cy = (n + 0.5) / feature_shapes[i], (m + 0.5) / feature_shapes[i]
+                anchors.append((cx, cy, w, h))
+
+    anchors = np.array(anchors, dtype=np.float32)
+    anchors = np.clip(anchors, a_min=0, a_max=1)
+    anchors_ltrb = anchors.copy()  # (xmin, ymin, xmax, ymax)格式
+    anchors_ltrb[:, 0] = anchors[:, 0] - 0.5 * anchors[:, 2]
+    anchors_ltrb[:, 1] = anchors[:, 1] - 0.5 * anchors[:, 3]
+    anchors_ltrb[:, 2] = anchors[:, 0] + 0.5 * anchors[:, 2]
+    anchors_ltrb[:, 3] = anchors[:, 1] + 0.5 * anchors[:, 3]
+
+    return anchors_ltrb
+
+
+def generate_ssd_anchor_v2(input_image_shape, anchor_sizes, feature_shapes, aspect_ratios):
     image_h, image_w = input_image_shape
     anchors = []
     for i in range(len(feature_shapes)):
@@ -38,8 +70,8 @@ def generate_ssd_anchor(input_image_shape, anchor_sizes, feature_shapes, aspect_
         pixel_length = [image_h / feature_h, image_w / feature_h]
         # 生成网格中心
         c_x = np.linspace(0.5 * pixel_length[1], image_w - 0.5 * pixel_length[1], feature_h)
-        c_y = np.linspace(0.5 * pixel_length[0], image_w - 0.5 * pixel_length[0], feature_h)
-        center_x, center_y = np.meshgrid(c_x, c_y)
+        c_y = np.linspace(0.5 * pixel_length[0], image_h - 0.5 * pixel_length[0], feature_h)
+        center_x, center_y = np.meshgrid(c_x, c_y, indexing='ij')
         center_x = np.reshape(center_x, (-1, 1))  # (feature_h**2, 1)
         center_y = np.reshape(center_y, (-1, 1))  # (feature_h**2, 1)
 

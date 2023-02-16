@@ -35,6 +35,7 @@ class AssignGTToDefaultBoxes:
 
         # 将每个gt匹配到的最佳default_box设置为正样本
         best_dbox_ious.index_fill_(0, best_bbox_idx, 2.0)
+        # 将相应default box匹配最大iou的gt索引进行替换
         idx = torch.arange(0, best_bbox_idx.size(dim=0), dtype=torch.int64)
         best_dbox_idx[best_bbox_idx[idx]] = idx
 

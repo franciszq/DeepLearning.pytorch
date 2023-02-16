@@ -3,6 +3,7 @@ import time
 
 import cv2
 import numpy as np
+import torch
 
 from data import find_class_name
 
@@ -25,11 +26,20 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
     :param save_dir: 检测结果保存的文件夹
     :return:
     """
+    # 移除坐标不在图片大小范围内的检测框
+    ori_image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    ori_h, ori_w, _ = ori_image.shape
+    mask = torch.logical_and((boxes[:, 0] > 0), (boxes[:, 1] > 0))
+    mask = torch.logical_and(mask, (boxes[:, 2] < ori_w))
+    mask = torch.logical_and(mask, (boxes[:, 3] < ori_h))
+    boxes = boxes[mask]
+    scores = scores[mask]
+    class_indices = class_indices[mask]
     n = boxes.size(0)
     if n == 0:
         # 没有检测到目标
         print("Detect 0 object")
-        image_with_boxes = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+        image_with_boxes = ori_image
     else:
         print(f"Detect {n} objects: ")
         boxes = boxes.cpu().numpy()
@@ -43,7 +53,7 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
             print("classes: ", class_names)
 
         painter = Draw()
-        image_with_boxes = painter.draw_boxes_on_image(image_path, boxes, scores, class_ids=class_indices,
+        image_with_boxes = painter.draw_boxes_on_image(ori_image, boxes, scores, class_ids=class_indices,
                                                        class_names=class_names)
     if save_result:
         save_filename = os.path.join(save_dir, os.path.basename(image_path).split(".")[0] + f"@{now()}.jpg")
@@ -157,8 +167,8 @@ class Draw:
         #     "紫红色": (255, 0, 255)
         # }
 
-    def draw_boxes_on_image(self, image_path, boxes, scores, class_ids, class_names):
-        image = cv2.imread(image_path)
+    def draw_boxes_on_image(self, image, boxes, scores, class_ids, class_names):
+        # image = cv2.imread(image_path)
         # h, w, _ = image.shape
         # d, r = self._get_adaptive_zoom_ratio(h, w)
         boxes = boxes.astype(int)

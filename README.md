@@ -50,7 +50,7 @@ pip install -r requirements.txt
 ## 训练
 
 ```commandline
-python train.py --cfg configs/ssd.py
+python train.py --cfg configs/ssd.py --mode train
 ```
 
 ## 在图片上测试

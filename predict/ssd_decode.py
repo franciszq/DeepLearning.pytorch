@@ -103,7 +103,7 @@ class Decoder:
 
         # 移除面积很小的边界框
         w, h = boxes_all[:, 2] - boxes_all[:, 0], boxes_all[:, 3] - boxes_all[:, 1]
-        keep = (w >= 1 / 300) & (h >= 1 / 300)
+        keep = (w >= 1 / self.input_image_size[1]) & (h >= 1 / self.input_image_size[0])
         keep = keep.nonzero().squeeze(1)
         boxes_all, scores_all, labels_all = boxes_all[keep], scores_all[keep], labels_all[keep]
 

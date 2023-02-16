@@ -11,7 +11,7 @@ def warm_up_scheduler(optimizer, warmup_epochs, milestones=None, gamma=0.1, last
             else:
                 factor = 1.0
                 for m in milestones:
-                    if epoch > m:
+                    if (epoch + 1) > m:
                         factor *= gamma
                 return factor
 

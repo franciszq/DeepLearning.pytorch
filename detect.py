@@ -7,9 +7,9 @@ from configs import get_cfg
 from models.ssd import SSD
 from predict import ssd_decode
 
-WEIGHTS = "saves/ssd_voc_epoch-4.pth"
+WEIGHTS = "saves/ssd_voc_final.pth"
 IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg",
-               "test/2007_000392.jpg"]
+               "test/2007_000039.jpg"]
 
 
 def parse_args():

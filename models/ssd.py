@@ -119,7 +119,7 @@ class SSD(nn.Module):
         self.feature_channels = cfg.arch.feature_channels
 
         if self.backbone_name == "vgg16":
-            self.backbone = VGG(batch_norm=True, pretrained=True)
+            self.backbone = VGG(batch_norm=True, pretrained=cfg.train.pretrained)
         elif self.backbone_name == "mobilenetv1":
             self.backbone = MobileNetV1()
         else:
