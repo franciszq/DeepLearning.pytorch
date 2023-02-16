@@ -47,13 +47,18 @@ pip install -r requirements.txt
 ```
 最后，修改`coco.yaml`和`voc.yaml`文件中参数`root`的值，分别为`${COCO_ROOT}/coco`和`${VOC_ROOT}/VOCdevkit/VOC2012/`
 
-## 训练
+## 使用方法
+### 训练
 
 ```commandline
 python train.py --cfg configs/ssd.py --mode train
 ```
+### 验证模型的性能
+```commandline
+python train.py --cfg configs/ssd.py --mode test
+```
 
-## 在图片上测试
+### 在图片上测试
 ```commandline
 python detect.py --cfg configs/ssd.py
 ```

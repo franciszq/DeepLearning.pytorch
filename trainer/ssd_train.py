@@ -178,11 +178,6 @@ class SSDTrainer(Pipeline):
 
             self.lr_scheduler.step()
 
-            if epoch % self.eval_interval == 0:
-                pass
-                # evaluation = self.evaluate(self.val_dataloader)
-                # print("Evaluation: loss={loss}, acc={acc}".format(**evaluation))
-
             if epoch % self.save_interval == 0:
                 CheckPoint.save(self.model, self.optimizer, None, epoch,
                                 path=Path(self.save_path).joinpath(
@@ -197,7 +192,7 @@ class SSDTrainer(Pipeline):
     def evaluate(self,
                  weights=None,
                  subset='val',
-                 ):
+                 skip=False):
 
         # 加载权重
         if weights is not None:
@@ -211,10 +206,11 @@ class SSDTrainer(Pipeline):
                                           num_max_output_boxes=self.cfg.decode.num_max_output_boxes,
                                           num_classes=self.cfg.arch.num_classes,
                                           variance=self.cfg.loss.variance,
-                                          conf_threshold=self.cfg.decode.confidence_threshold,
+                                          conf_threshold=0.02,
                                           nms_threshold=self.cfg.decode.nms_threshold,
                                           device=self.device),
                           input_image_size=self.input_image_size[1:],
-                          result_root=os.path.join(self.result_path, "detections"),
+                          map_out_root=os.path.join(self.result_path, "map"),
                           subset=subset,
-                          device=self.device)
+                          device=self.device,
+                          skip=skip)
