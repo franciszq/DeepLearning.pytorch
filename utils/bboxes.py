@@ -2,6 +2,46 @@ import torch
 import numpy as np
 
 
+def xywh_to_xyxy(coords):
+    """
+    坐标变换
+    :param coords: numpy.ndarray, 最后一维的4个数是坐标 (center_x, center_y, w, h)
+    :return: numpy.ndarray, 与输入的形状一致，最后一维的格式是(xmin, ymin, xmax, ymax)
+    """
+    cx = coords[..., 0:1]
+    cy = coords[..., 1:2]
+    w = coords[..., 2:3]
+    h = coords[..., 3:4]
+
+    xmin = cx - w / 2
+    xmax = cx + w / 2
+    ymin = cy - h / 2
+    ymax = cy + h / 2
+
+    new_coords = np.concatenate((xmin, ymin, xmax, ymax), axis=-1)
+    return new_coords
+
+
+def xywh_to_xyxy_torch(coords):
+    """
+    坐标变换
+    :param coords: torch.Tensor, 最后一维的4个数是坐标 (center_x, center_y, w, h)
+    :return: torch.Tensor, 与输入的形状一致，最后一维的格式是(xmin, ymin, xmax, ymax)
+    """
+    cx = coords[..., 0:1]
+    cy = coords[..., 1:2]
+    w = coords[..., 2:3]
+    h = coords[..., 3:4]
+
+    xmin = cx - w / 2
+    xmax = cx + w / 2
+    ymin = cy - h / 2
+    ymax = cy + h / 2
+
+    new_coords = torch.cat((xmin, ymin, xmax, ymax), dim=-1)
+    return new_coords
+
+
 def xyxy_to_xywh(coords, center=True):
     """
     坐标变换
@@ -22,6 +62,28 @@ def xyxy_to_xywh(coords, center=True):
         return np.concatenate((center_x, center_y, w, h), axis=-1)
     else:
         return np.concatenate((xmin, ymin, w, h), axis=-1)
+
+
+def xyxy_to_xywh_torch(coords, center=True):
+    """
+    坐标变换
+    :param coords: torch.Tensor, 最后一维的4个数是坐标
+    :param center: True表示将(xmin, ymin, xmax, ymax)转变为(center_x, center_y, w, h)格式
+                   False表示将(xmin, ymin, xmax, ymax)转变为(xmin, ymin, w, h)格式
+    :return: torch.Tensor, 与输入的形状一致
+    """
+    xmin = coords[..., 0:1]
+    ymin = coords[..., 1:2]
+    xmax = coords[..., 2:3]
+    ymax = coords[..., 3:4]
+    w = xmax - xmin
+    h = ymax - ymin
+    if center:
+        center_x = (xmin + xmax) / 2
+        center_y = (ymin + ymax) / 2
+        return torch.cat((center_x, center_y, w, h), dim=-1)
+    else:
+        return torch.cat((xmin, ymin, w, h), dim=-1)
 
 
 def intersect(box_a, box_b):

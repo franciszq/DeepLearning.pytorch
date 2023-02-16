@@ -22,7 +22,6 @@ class Decoder:
                  device):
         """
         :param anchors:  先验框，numpy.ndarray, shape: (8732, 4)
-        :param original_image_size: tuple or list, [h, w] 原始图片大小
         :param input_image_size:  SSD网络的输入图片大小
         :param num_max_output_boxes: 最大输出检测框数量
         :param num_classes:  检测的目标类别数

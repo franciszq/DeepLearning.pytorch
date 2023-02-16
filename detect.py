@@ -5,9 +5,10 @@ import torch
 
 from configs import get_cfg
 from models.ssd import SSD
-from predict import ssd_decode
+from models.centernet import CenterNet
+from predict import ssd_decode, centernet_decode
 
-WEIGHTS = "saves/ssd_voc_final.pth"
+WEIGHTS = "saves/CenterNet_voc_epoch_200.pth"
 IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg",
                "test/2007_000039.jpg"]
 
@@ -31,6 +32,12 @@ def main():
         print(f"Loaded weights: {WEIGHTS}")
         for img in IMAGE_PATHS:
             ssd_decode.detect_one_image(cfg, model, img, print_on=True, save_result=True, device=device)
+    elif model_name == "centernet":
+        model = CenterNet(cfg).to(device)
+        model.load_state_dict(torch.load(WEIGHTS, map_location=device)["model"])
+        print(f"Loaded weights: {WEIGHTS}")
+        for img in IMAGE_PATHS:
+            centernet_decode.detect_one_image(cfg, model, img, print_on=True, save_result=True, device=device)
 
     print(f"Total time: {(time.time() - t0):.2f}s")
 

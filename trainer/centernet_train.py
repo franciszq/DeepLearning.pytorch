@@ -80,7 +80,7 @@ class CenterNetTrainer(Pipeline):
                                                 input_size=self.input_image_size[1:]).__call__()
 
     def _initialize_model(self, *args, **kwargs):
-        self.model = CenterNet(num_classes=self.cfg.arch.num_classes)
+        self.model = CenterNet(self.cfg)
         self.model.to(device=self.device)
 
     def load_weights(self, weights=None):

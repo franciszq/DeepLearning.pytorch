@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from configs.centernet import Config
+
 
 class BasicBlock(nn.Module):
     def __init__(self, c_in, c_out, stride=1):
@@ -361,9 +363,9 @@ class DLASeg(nn.Module):
 
 
 class CenterNet(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, cfg: Config):
         super(CenterNet, self).__init__()
-        self.heads = {"heatmap": num_classes, "wh": 2, "reg": 2}
+        self.heads = {"heatmap": cfg.arch.num_classes, "wh": 2, "reg": 2}
         self.backbone = DLASeg(base_name="dla34", heads=self.heads)
 
     def forward(self, x):
