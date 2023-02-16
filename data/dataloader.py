@@ -21,10 +21,10 @@ class PublicDataLoader:
             T.ImageColorJitter(),
         ]
 
-        self.val_transforms = [
-            T.Resize(self.input_size),
-            T.ToTensor()
-        ]
+        # self.val_transforms = [
+        #     T.Resize(self.input_size),
+        #     T.ToTensor()
+        # ]
 
     @staticmethod
     def _get_voc(train, transforms):
@@ -33,9 +33,10 @@ class PublicDataLoader:
     def __call__(self, *args, **kwargs):
         if self.dataset_name == 'voc':
             train_data = self._get_voc(True, T.Compose(self.train_transforms))
-            val_data = self._get_voc(False, T.Compose(self.val_transforms))
+            # val_data = self._get_voc(False, T.Compose(self.val_transforms))
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True)
-            val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False)
-            return train_loader, val_loader
+            # val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False)
+            # return train_loader, val_loader
+            return train_loader
         else:
             raise ValueError(f"{self.dataset_name} is not supported")

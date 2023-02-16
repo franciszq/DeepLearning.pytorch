@@ -67,5 +67,5 @@ class SSDLoader(PublicDataLoader):
         super().__init__(dataset_name, batch_size, input_size)
         self.train_transforms.append(UpdateClassIndices())
         self.train_transforms.append(AssignGTToDefaultBoxes(cfg, anchors))
-        self.val_transforms.append(UpdateClassIndices())
-        self.val_transforms.append(AssignGTToDefaultBoxes(cfg, anchors))
+        # self.val_transforms.append(UpdateClassIndices())
+        # self.val_transforms.append(AssignGTToDefaultBoxes(cfg, anchors))

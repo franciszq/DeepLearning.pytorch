@@ -8,13 +8,18 @@ from tqdm import tqdm
 
 from configs.ssd import Config
 from data.ssd_dataloader import SSDLoader
+from data.voc import get_voc_root_and_classes
 from loss.multi_box_loss import MultiBoxLoss
+from mAP.eval import evaluate_pipeline
 from models.ssd import SSD
+from predict.ssd_decode import Decoder
 from trainer.base import Pipeline
 from utils.anchor import generate_ssd_anchor
 from utils.ckpt import CheckPoint
+from utils.image_process import read_image, letter_box
 from utils.lr_scheduler import warm_up_scheduler
 from utils.metrics import MeanMetric
+import torchvision.transforms.functional as TF
 
 
 class SSDTrainer(Pipeline):
@@ -43,7 +48,7 @@ class SSDTrainer(Pipeline):
             os.makedirs(self.save_path)
 
         self.result_path = cfg.decode.test_results
-        # 自动创建目录用于存放姿态估计的结果
+        # 自动创建目录用于存放检测结果
         if not os.path.exists(self.result_path):
             os.makedirs(self.result_path)
 
@@ -57,7 +62,7 @@ class SSDTrainer(Pipeline):
                                            aspect_ratios=cfg.arch.aspect_ratios)  # (8732, 4)
 
         self.train_dataloader = None
-        self.val_dataloader = None
+        # self.val_dataloader = None
         self.model = None
 
         # 加载数据集
@@ -85,9 +90,9 @@ class SSDTrainer(Pipeline):
                                               last_epoch=self.last_epoch)
 
     def _load_data(self, *args, **kwargs):
-        self.train_dataloader, self.val_dataloader = SSDLoader(self.cfg, self.dataset_name, self.batch_size,
-                                                               self.input_image_size[1:],
-                                                               self.anchors.copy()).__call__()
+        self.train_dataloader = SSDLoader(self.cfg, self.dataset_name, self.batch_size,
+                                          self.input_image_size[1:],
+                                          self.anchors.copy()).__call__()
 
     def _initialize_model(self, *args, **kwargs):
         self.model = SSD(self.cfg)
@@ -189,6 +194,27 @@ class SSDTrainer(Pipeline):
         CheckPoint.save(self.model, self.optimizer, None, epoch,
                         path=Path(self.save_path).joinpath(f"ssd_{self.dataset_name.lower()}_final.pth"))
 
-    def evaluate(self, *args, **kwargs):
-        pass
+    def evaluate(self,
+                 weights=None,
+                 subset='val',
+                 ):
 
+        # 加载权重
+        if weights is not None:
+            self.load_weights(weights)
+        # 切换为'eval'模式
+        self.model.eval()
+
+        evaluate_pipeline(model=self.model,
+                          decoder=Decoder(anchors=self.anchors.copy(),
+                                          input_image_size=self.input_image_size[1:],
+                                          num_max_output_boxes=self.cfg.decode.num_max_output_boxes,
+                                          num_classes=self.cfg.arch.num_classes,
+                                          variance=self.cfg.loss.variance,
+                                          conf_threshold=self.cfg.decode.confidence_threshold,
+                                          nms_threshold=self.cfg.decode.nms_threshold,
+                                          device=self.device),
+                          input_image_size=self.input_image_size[1:],
+                          result_root=os.path.join(self.result_path, "detections"),
+                          subset=subset,
+                          device=self.device)

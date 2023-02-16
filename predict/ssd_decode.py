@@ -13,7 +13,6 @@ from utils.visualize import show_detection_results
 class Decoder:
     def __init__(self,
                  anchors,
-                 original_image_size,
                  input_image_size,
                  num_max_output_boxes,
                  num_classes,
@@ -43,7 +42,6 @@ class Decoder:
         self.conf_thresh = conf_threshold
         self.nms_thresh = nms_threshold
 
-        self.original_image_size = original_image_size
         self.input_image_size = input_image_size
 
     def _decode(self, bboxes_in, scores_in):
@@ -117,11 +115,11 @@ class Decoder:
         scores_out = scores_all[keep]
         labels_out = labels_all[keep]
 
-        # 将boxes坐标变换到原始图片上
-        boxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
-                                   input_size=self.input_image_size, boxes=boxes_out, xywh=False)
+        # # 将boxes坐标变换到原始图片上
+        # boxes = reverse_letter_box(h=self.original_image_size[0], w=self.original_image_size[1],
+        #                            input_size=self.input_image_size, boxes=boxes_out, xywh=False)
 
-        return boxes, scores_out, labels_out - 1
+        return boxes_out, scores_out, labels_out - 1
 
 
 def detect_one_image(cfg: Config, model, image_path, print_on, save_result, device):
@@ -140,7 +138,6 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
                                   aspect_ratios=cfg.arch.aspect_ratios)  # (8732, 4)
 
     decoder = Decoder(anchors=anchors.copy(),
-                      original_image_size=[h, w],
                       input_image_size=cfg.arch.input_size[1:],
                       num_max_output_boxes=cfg.decode.num_max_output_boxes,
                       num_classes=cfg.arch.num_classes,
@@ -152,6 +149,8 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
     with torch.no_grad():
         preds = model(image)
         boxes, scores, classes = decoder(preds)
+        # 将boxes坐标变换到原始图片上
+        boxes = reverse_letter_box(h=h, w=w, input_size=cfg.arch.input_size[1:], boxes=boxes, xywh=False)
 
     show_detection_results(image_path=image_path,
                            dataset_name=cfg.dataset.dataset_name,

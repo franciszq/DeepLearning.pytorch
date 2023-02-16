@@ -22,9 +22,10 @@ def main():
     m = None
     if model_name == "ssd":
         m = SSDTrainer(cfg, device)
-
     if args.mode == "train":
         m.train()
+    elif args.mode == "test":
+        m.evaluate(weights="saves/ssd_voc_final.pth")
     else:
         raise ValueError(f"不支持的模式：{args.mode}")
 

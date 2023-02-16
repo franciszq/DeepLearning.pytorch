@@ -34,13 +34,13 @@ class Voc(Dataset):
             # 加载训练集
             train_txt = os.path.join(self.root, "ImageSets", "Main", "train.txt")
             with open(train_txt, mode="r", encoding="utf-8") as f:
-                image_names = f.read().splitlines()
+                image_names = f.read().strip().split('\n')
             return image_names
         else:
             # 加载验证集
             val_txt = os.path.join(self.root, "ImageSets", "Main", "val.txt")
             with open(val_txt, mode="r", encoding="utf-8") as f:
-                image_names = f.read().splitlines()
+                image_names = f.read().strip().split('\n')
             return image_names
 
     def __len__(self):
