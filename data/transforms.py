@@ -1,4 +1,6 @@
 import random
+
+import numpy as np
 import torch
 import torchvision.transforms.functional as F
 
@@ -61,3 +63,14 @@ class ImageColorJitter:
         image = F.adjust_brightness(image, self.random_brightness_factor)
         image = F.adjust_hue(image, self.random_hue_factor)
         return image, target
+
+
+class TargetPadding:
+    def __init__(self, max_num_boxes):
+        self.max_num_boxes = max_num_boxes
+
+    def __call__(self, image, target):
+        dst = np.full(shape=(self.max_num_boxes, 5), fill_value=-1, dtype=np.float32)
+        for i in range(min(dst.shape[0], target.shape[0])):
+            dst[i] = target[i]
+        return image, dst

@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 
+from configs.centernet import Config
+
 
 class FocalLoss:
     def __call__(self, y_true, y_pred):
@@ -44,11 +46,11 @@ class RegL1Loss:
 
 
 class CombinedLoss:
-    def __init__(self, cfg):
-        self.num_classes = cfg["Model"]["num_classes"]
-        self.hm_weight = cfg["Loss"]["hm_weight"]
-        self.wh_weight = cfg["Loss"]["wh_weight"]
-        self.off_weight = cfg["Loss"]["off_weight"]
+    def __init__(self, cfg: Config):
+        self.num_classes = cfg.arch.num_classes
+        self.hm_weight = cfg.loss.hm_weight
+        self.wh_weight = cfg.loss.wh_weight
+        self.off_weight = cfg.loss.off_weight
 
         self.heatmap_loss_object = FocalLoss()
         self.reg_loss_object = RegL1Loss()

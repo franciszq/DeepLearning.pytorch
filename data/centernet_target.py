@@ -1,20 +1,23 @@
 import torch
 
+from configs.centernet import Config
 from utils.gaussian import gaussian_radius, draw_umich_gaussian
 
 
 class TargetGenerator:
-    def __init__(self, cfg, batch_labels):
-        self.device = cfg["device"]
-        self.input_size = cfg["Train"]["input_size"]
-        self.downsampling_ratio = cfg["Model"]["downsampling_ratio"]
+    def __init__(self, cfg: Config, batch_labels, device):
+        self.device = device
+        c, h, w = cfg.arch.input_size
+        assert h == w
+        self.input_size = h
+        self.downsampling_ratio = cfg.arch.downsampling_ratio
         self.features_shape = torch.tensor(
             data=[self.input_size // self.downsampling_ratio, self.input_size // self.downsampling_ratio],
             dtype=torch.int32, device=self.device)
         self.batch_labels = batch_labels
         self.batch_size = batch_labels.size()[0]
-        self.max_num_boxes = cfg["Train"]["max_num_boxes"]
-        self.num_classes = cfg["Model"]["num_classes"]
+        self.max_num_boxes = cfg.train.max_num_boxes
+        self.num_classes = cfg.arch.num_classes
 
     def __call__(self, *args, **kwargs):
         gt_heatmap = torch.zeros(self.batch_size, self.features_shape[0], self.features_shape[1], self.num_classes,
@@ -24,7 +27,7 @@ class TargetGenerator:
         gt_reg_mask = torch.zeros(self.batch_size, self.max_num_boxes, dtype=torch.float32, device=self.device)
         gt_indices = torch.zeros(self.batch_size, self.max_num_boxes, dtype=torch.float32, device=self.device)
         for i, label in enumerate(self.batch_labels):
-            label = label[label[:, -1] != -1]    # shape: (N, 5)
+            label = label[label[:, -1] != -1]  # shape: (N, 5)
             hm, reg, wh, reg_mask, ind = self._parse_label(label)
             gt_heatmap[i, :, :, :] = hm
             gt_reg[i, :, :] = reg

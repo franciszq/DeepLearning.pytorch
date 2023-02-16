@@ -3,6 +3,7 @@ import argparse
 
 
 from trainer.ssd_train import SSDTrainer
+from trainer.centernet_train import CenterNetTrainer
 from configs import get_cfg
 
 
@@ -22,6 +23,9 @@ def main():
     m = None
     if model_name == "ssd":
         m = SSDTrainer(cfg, device)
+    elif model_name == "centernet":
+        m = CenterNetTrainer(cfg, device)
+
     if args.mode == "train":
         m.train()
     elif args.mode == "test":

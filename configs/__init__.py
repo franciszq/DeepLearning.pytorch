@@ -1,5 +1,5 @@
 import os
-from . import ssd
+from . import ssd, centernet
 
 
 def get_cfg(filepath):
@@ -7,5 +7,8 @@ def get_cfg(filepath):
     if filename == "ssd.py":
         model_name = filename.split('.')[0]
         return ssd.Config(), model_name
+    elif filename == "centernet.py":
+        model_name = filename.split('.')[0]
+        return centernet.Config(), model_name
     else:
-        raise ValueError(f"找不到{filepath}或{filepath}不存在")
+        raise ValueError(f"Could not find {filepath}. Perhaps the corresponding module is not registered.")

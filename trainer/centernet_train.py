@@ -6,20 +6,19 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from configs.ssd import Config
-from data.ssd_dataloader import SSDLoader
-from loss.multi_box_loss import MultiBoxLoss
+from configs.centernet import Config
+from data.centernet_dataloader import CenterNetLoader
+from data.centernet_target import TargetGenerator
+from loss.centernet_loss import CombinedLoss
 from mAP.eval import evaluate_pipeline
-from models.ssd import SSD
-from predict.ssd_decode import Decoder
+from models.centernet import CenterNet
 from trainer.base import Pipeline
-from utils.anchor import generate_ssd_anchor
 from utils.ckpt import CheckPoint
 from utils.lr_scheduler import warm_up_scheduler
 from utils.metrics import MeanMetric
 
 
-class SSDTrainer(Pipeline):
+class CenterNetTrainer(Pipeline):
     def __init__(self, cfg: Config, device):
         self.device = device
         self.cfg = cfg
@@ -52,14 +51,7 @@ class SSDTrainer(Pipeline):
         self.tensorboard_on = cfg.train.tensorboard_on
         self.mixed_precision = cfg.train.mixed_precision
 
-        # 生成anchor
-        self.anchors = generate_ssd_anchor(input_image_shape=self.input_image_size[1:],
-                                           anchor_sizes=cfg.arch.anchor_size,
-                                           feature_shapes=cfg.arch.feature_shapes,
-                                           aspect_ratios=cfg.arch.aspect_ratios)  # (8732, 4)
-
         self.train_dataloader = None
-        # self.val_dataloader = None
         self.model = None
 
         # 加载数据集
@@ -68,11 +60,7 @@ class SSDTrainer(Pipeline):
         self._initialize_model()
 
         # 损失函数
-        self.criterion = MultiBoxLoss(self.anchors.copy(),
-                                      cfg.loss.overlap_threshold,
-                                      cfg.loss.variance,
-                                      cfg.loss.neg_pos,
-                                      self.device)
+        self.criterion = CombinedLoss(self.cfg)
 
         # 创建优化器
         if self.optimizer_name == 'Adam':
@@ -87,12 +75,12 @@ class SSDTrainer(Pipeline):
                                               last_epoch=self.last_epoch)
 
     def _load_data(self, *args, **kwargs):
-        self.train_dataloader = SSDLoader(self.cfg, self.dataset_name, self.batch_size,
-                                          self.input_image_size[1:],
-                                          self.anchors.copy()).__call__()
+        self.train_dataloader = CenterNetLoader(self.cfg, dataset_name=self.dataset_name,
+                                                batch_size=self.batch_size,
+                                                input_size=self.input_image_size[1:]).__call__()
 
     def _initialize_model(self, *args, **kwargs):
-        self.model = SSD(self.cfg)
+        self.model = CenterNet(num_classes=self.cfg.arch.num_classes)
         self.model.to(device=self.device)
 
     def load_weights(self, weights=None):
@@ -105,8 +93,6 @@ class SSDTrainer(Pipeline):
 
     def train(self, *args, **kwargs):
         loss_mean = MeanMetric()
-        loc_loss_mean = MeanMetric()  # 位置损失
-        conf_loss_mean = MeanMetric()  # 分类损失
 
         if self.tensorboard_on:
             writer = SummaryWriter()
@@ -130,84 +116,55 @@ class SSDTrainer(Pipeline):
             self.model.train()
             # 重置
             loss_mean.reset()
-            loc_loss_mean.reset()
-            conf_loss_mean.reset()
 
             with tqdm(self.train_dataloader, desc=f"Epoch-{epoch}/{self.total_epoch}") as pbar:
-                for i, (images, targets) in enumerate(pbar):
+                for i, (images, labels) in enumerate(pbar):
                     images = images.to(self.device)
-                    targets = targets.to(self.device)
+                    labels = labels.to(self.device)
+                    target = list(TargetGenerator(self.cfg, labels, self.device).__call__())
 
                     self.optimizer.zero_grad()
                     if self.mixed_precision:
                         with torch.cuda.amp.autocast():
                             preds = self.model(images)
-                            total_loss, l_loss, c_loss = self.criterion(y_true=targets, y_pred=preds)
-                        scaler.scale(total_loss).backward()
+                            target.insert(0, preds)
+                            loss = self.criterion(*target)
+                        scaler.scale(loss).backward()
                         scaler.step(self.optimizer)
                         scaler.update()
                     else:
                         preds = self.model(images)
-                        total_loss, l_loss, c_loss = self.criterion(y_true=targets, y_pred=preds)
-                        total_loss.backward()
+                        target.insert(0, preds)
+                        loss = self.criterion(*target)
+                        loss.backward()
                         self.optimizer.step()
 
-                    loss_mean.update(total_loss.item())
-                    loc_loss_mean.update(l_loss.item())
-                    conf_loss_mean.update(c_loss.item())
+                    loss_mean.update(loss.item())
 
                     # 当前学习率
                     current_lr = self.optimizer.state_dict()['param_groups'][0]['lr']
 
                     if self.tensorboard_on:
-                        writer.add_scalar(tag="Train/loss", scalar_value=total_loss.item(),
-                                          global_step=epoch * len(self.train_dataloader) + i)
-                        writer.add_scalar(tag="Train/loc loss", scalar_value=l_loss.item(),
-                                          global_step=epoch * len(self.train_dataloader) + i),
-                        writer.add_scalar(tag="Train/conf loss", scalar_value=c_loss.item(),
+                        writer.add_scalar(tag="Train/loss", scalar_value=loss.item(),
                                           global_step=epoch * len(self.train_dataloader) + i)
                         writer.add_scalar(tag="Learning rate", scalar_value=current_lr,
                                           global_step=epoch * len(self.train_dataloader) + i)
 
-                    pbar.set_postfix({"loss": "{}".format(loss_mean.result()),
-                                      "loc_loss": "{:.4f}".format(loc_loss_mean.result()),
-                                      "conf_loss": "{:.4f}".format(conf_loss_mean.result())})
+                    pbar.set_postfix({"loss": "{}".format(loss_mean.result())})
 
             self.lr_scheduler.step()
 
             if epoch % self.save_interval == 0:
                 CheckPoint.save(self.model, self.optimizer, None, epoch,
                                 path=Path(self.save_path).joinpath(
-                                    f"ssd_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
+                                    f"centernet_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
 
         if self.tensorboard_on:
             writer.close()
         # 保存最终模型
         CheckPoint.save(self.model, self.optimizer, None, self.total_epoch - 1,
-                        path=Path(self.save_path).joinpath(f"ssd_{self.dataset_name.lower()}_final.pth"))
+                        path=Path(self.save_path).joinpath(f"centernet_{self.dataset_name.lower()}_final.pth"))
 
-    def evaluate(self,
-                 weights=None,
-                 subset='val',
-                 skip=False):
 
-        # 加载权重
-        if weights is not None:
-            self.load_weights(weights)
-        # 切换为'eval'模式
-        self.model.eval()
-
-        evaluate_pipeline(model=self.model,
-                          decoder=Decoder(anchors=self.anchors.copy(),
-                                          input_image_size=self.input_image_size[1:],
-                                          num_max_output_boxes=self.cfg.decode.num_max_output_boxes,
-                                          num_classes=self.cfg.arch.num_classes,
-                                          variance=self.cfg.loss.variance,
-                                          conf_threshold=0.02,
-                                          nms_threshold=self.cfg.decode.nms_threshold,
-                                          device=self.device),
-                          input_image_size=self.input_image_size[1:],
-                          map_out_root=os.path.join(self.result_path, "map"),
-                          subset=subset,
-                          device=self.device,
-                          skip=skip)
+    def evaluate(self, *args, **kwargs):
+        pass
