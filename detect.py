@@ -8,9 +8,8 @@ from models.ssd import SSD
 from models.centernet import CenterNet
 from predict import ssd_decode, centernet_decode
 
-WEIGHTS = "saves/CenterNet_voc_epoch_200.pth"
-IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg",
-               "test/2007_000039.jpg"]
+WEIGHTS = "saves/ssd_voc_epoch-0.pth"
+IMAGE_PATHS = ["test/2007_000032.jpg"]
 
 
 def parse_args():

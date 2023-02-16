@@ -7,13 +7,13 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from configs.ssd import Config
-from data.ssd_dataloader import SSDLoader
-from loss.multi_box_loss import MultiBoxLoss
+from data.ssd_dataloader import SSDLoader, SSDLoaderV2
+from loss.multi_box_loss import MultiBoxLoss, MultiBoxLossV2
 from mAP.eval import evaluate_pipeline
 from models.ssd import SSD
 from predict.ssd_decode import Decoder
 from trainer.base import Pipeline
-from utils.anchor import generate_ssd_anchor
+from utils.anchor import generate_ssd_anchor, generate_ssd_anchor_v2
 from utils.ckpt import CheckPoint
 from utils.lr_scheduler import warm_up_scheduler
 from utils.metrics import MeanMetric
@@ -53,10 +53,10 @@ class SSDTrainer(Pipeline):
         self.mixed_precision = cfg.train.mixed_precision
 
         # 生成anchor
-        self.anchors = generate_ssd_anchor(input_image_shape=self.input_image_size[1:],
-                                           anchor_sizes=cfg.arch.anchor_size,
-                                           feature_shapes=cfg.arch.feature_shapes,
-                                           aspect_ratios=cfg.arch.aspect_ratios)  # (8732, 4)
+        self.anchors = generate_ssd_anchor_v2(input_image_shape=self.input_image_size[1:],
+                                              anchor_sizes=cfg.arch.anchor_size,
+                                              feature_shapes=cfg.arch.feature_shapes,
+                                              aspect_ratios=cfg.arch.aspect_ratios)  # (8732, 4)
 
         self.train_dataloader = None
         # self.val_dataloader = None
@@ -68,11 +68,8 @@ class SSDTrainer(Pipeline):
         self._initialize_model()
 
         # 损失函数
-        self.criterion = MultiBoxLoss(self.anchors.copy(),
-                                      cfg.loss.overlap_threshold,
-                                      cfg.loss.variance,
-                                      cfg.loss.neg_pos,
-                                      self.device)
+        self.criterion = MultiBoxLossV2(neg_pos_ratio=cfg.loss.neg_pos,
+                                        num_classes=cfg.arch.num_classes)
 
         # 创建优化器
         if self.optimizer_name == 'Adam':
@@ -87,9 +84,9 @@ class SSDTrainer(Pipeline):
                                               last_epoch=self.last_epoch)
 
     def _load_data(self, *args, **kwargs):
-        self.train_dataloader = SSDLoader(self.cfg, self.dataset_name, self.batch_size,
-                                          self.input_image_size[1:],
-                                          self.anchors.copy()).__call__()
+        self.train_dataloader = SSDLoaderV2(self.cfg, self.dataset_name, self.batch_size,
+                                            self.input_image_size[1:],
+                                            self.anchors.copy()).__call__()
 
     def _initialize_model(self, *args, **kwargs):
         self.model = SSD(self.cfg)

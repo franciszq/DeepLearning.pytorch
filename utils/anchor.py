@@ -71,7 +71,7 @@ def generate_ssd_anchor_v2(input_image_shape, anchor_sizes, feature_shapes, aspe
         # 生成网格中心
         c_x = np.linspace(0.5 * pixel_length[1], image_w - 0.5 * pixel_length[1], feature_h)
         c_y = np.linspace(0.5 * pixel_length[0], image_h - 0.5 * pixel_length[0], feature_h)
-        center_x, center_y = np.meshgrid(c_x, c_y, indexing='ij')
+        center_x, center_y = np.meshgrid(c_x, c_y)
         center_x = np.reshape(center_x, (-1, 1))  # (feature_h**2, 1)
         center_y = np.reshape(center_y, (-1, 1))  # (feature_h**2, 1)
 
