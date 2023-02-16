@@ -12,6 +12,7 @@ from data.centernet_target import TargetGenerator
 from loss.centernet_loss import CombinedLoss
 from mAP.eval import evaluate_pipeline
 from models.centernet import CenterNet
+from predict.centernet_decode import Decoder
 from trainer.base import Pipeline
 from utils.ckpt import CheckPoint
 from utils.lr_scheduler import warm_up_scheduler
@@ -165,6 +166,24 @@ class CenterNetTrainer(Pipeline):
         CheckPoint.save(self.model, self.optimizer, None, self.total_epoch - 1,
                         path=Path(self.save_path).joinpath(f"centernet_{self.dataset_name.lower()}_final.pth"))
 
+    def evaluate(self,
+                 weights=None,
+                 subset='val',
+                 skip=False):
+        # 加载权重
+        if weights is not None:
+            self.load_weights(weights)
+            # self.model.load_state_dict(torch.load(weights, map_location=self.device))
+        # 切换为'eval'模式
+        self.model.eval()
 
-    def evaluate(self, *args, **kwargs):
-        pass
+        evaluate_pipeline(model=self.model,
+                          decoder=Decoder(self.cfg,
+                                          input_image_size=self.input_image_size[1:],
+                                          score_threshold=0.02,
+                                          device=self.device),
+                          input_image_size=self.input_image_size[1:],
+                          map_out_root=os.path.join(self.result_path, "map"),
+                          subset=subset,
+                          device=self.device,
+                          skip=skip)

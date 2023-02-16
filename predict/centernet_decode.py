@@ -11,11 +11,12 @@ from utils.visualize import show_detection_results
 
 
 class Decoder:
-    def __init__(self, cfg: Config, input_image_size, device):
+    def __init__(self, cfg: Config, input_image_size, score_threshold, device):
         """
         初始化参数
         :param cfg:
         :param input_image_size: list or tuple [h, w], CenterNet网络输入图片的固定大小
+        :param score_threshold: 分数低于这个数值的目标都会被移除
         :param device: 设备
         """
         self.device = device
@@ -27,7 +28,7 @@ class Decoder:
 
         self.downsampling_ratio = cfg.arch.downsampling_ratio
         self.feature_size = self.input_image_size / self.downsampling_ratio
-        self.score_threshold = cfg.decode.score_threshold
+        self.score_threshold = score_threshold
         self.use_nms = cfg.decode.use_nms
 
     def __call__(self, outputs):
@@ -106,6 +107,7 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
 
     decoder = Decoder(cfg,
                       input_image_size=cfg.arch.input_size[1:],
+                      score_threshold=cfg.decode.score_threshold,
                       device=device)
 
     with torch.no_grad():
