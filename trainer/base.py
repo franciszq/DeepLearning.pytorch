@@ -79,12 +79,18 @@ class BaseTrainer:
         self.train_dataloader = None
         # 模型
         self.model = None
+
         # 优化器
         self.optimizer = None
         # 学习率调整策略
         self.lr_scheduler = None
 
-        self.metric_names = ["loss", "loc_loss", "conf_loss"]
+        self.metric_names = []
+
+        self.load_data()
+        self.initialize_model()
+        self.set_optimizer()
+        self.set_lr_scheduler()
 
     def load_weights(self, weights=None):
         if weights:
@@ -93,6 +99,18 @@ class BaseTrainer:
         else:
             return CheckPoint.load(path=self.resume_training_weights, device=self.device,
                                    model=self.model, optimizer=self.optimizer)
+
+    def initialize_model(self):
+        pass
+
+    def load_data(self):
+        pass
+
+    def set_optimizer(self):
+        pass
+
+    def set_lr_scheduler(self):
+        pass
 
     def train_loop(self, images, targets, scaler) -> List:
         return []
