@@ -11,7 +11,7 @@ from data.ssd_dataloader import SSDLoader, SSDLoaderV2
 from loss.multi_box_loss import MultiBoxLoss, MultiBoxLossV2
 from mAP.eval import evaluate_pipeline
 from models.ssd import SSD
-from predict.ssd_decode import Decoder
+from predict.ssd_decode import Decoder, DecoderV2
 from trainer.base import Pipeline
 from utils.anchor import generate_ssd_anchor, generate_ssd_anchor_v2
 from utils.ckpt import CheckPoint
@@ -194,17 +194,33 @@ class SSDTrainer(Pipeline):
         # 切换为'eval'模式
         self.model.eval()
 
+        # evaluate_pipeline(model=self.model,
+        #                   decoder=Decoder(anchors=self.anchors.copy(),
+        #                                   input_image_size=self.input_image_size[1:],
+        #                                   num_max_output_boxes=self.cfg.decode.num_max_output_boxes,
+        #                                   num_classes=self.cfg.arch.num_classes,
+        #                                   variance=self.cfg.loss.variance,
+        #                                   conf_threshold=0.02,
+        #                                   nms_threshold=self.cfg.decode.nms_threshold,
+        #                                   device=self.device),
+        #                   input_image_size=self.input_image_size[1:],
+        #                   map_out_root=os.path.join(self.result_path, "map"),
+        #                   subset=subset,
+        #                   device=self.device,
+        #                   skip=skip)
         evaluate_pipeline(model=self.model,
-                          decoder=Decoder(anchors=self.anchors.copy(),
-                                          input_image_size=self.input_image_size[1:],
-                                          num_max_output_boxes=self.cfg.decode.num_max_output_boxes,
-                                          num_classes=self.cfg.arch.num_classes,
-                                          variance=self.cfg.loss.variance,
-                                          conf_threshold=0.02,
-                                          nms_threshold=self.cfg.decode.nms_threshold,
-                                          device=self.device),
+                          decoder=DecoderV2(anchors=self.anchors.copy(),
+                                            ori_image_shape=[0, 0],
+                                            input_image_size=self.input_image_size[1:],
+                                            num_max_output_boxes=self.cfg.decode.num_max_output_boxes,
+                                            num_classes=self.cfg.arch.num_classes,
+                                            variance=self.cfg.loss.variance,
+                                            conf_threshold=0.02,
+                                            nms_threshold=self.cfg.decode.nms_threshold,
+                                            device=self.device),
                           input_image_size=self.input_image_size[1:],
                           map_out_root=os.path.join(self.result_path, "map"),
                           subset=subset,
+                          list_input=True,
                           device=self.device,
                           skip=skip)

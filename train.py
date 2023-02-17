@@ -29,9 +29,9 @@ def main():
     if args.mode == "train":
         m.train()
     elif args.mode == "test":
-        m.evaluate(weights="saves/CenterNet_voc_epoch_200.pth")
+        m.evaluate(weights="saves/ssd_voc_final.pth")
     else:
-        raise ValueError(f"不支持的模式：{args.mode}")
+        raise ValueError(f"Unsupported mode：{args.mode}")
 
 
 if __name__ == '__main__':

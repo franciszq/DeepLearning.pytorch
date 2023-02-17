@@ -160,6 +160,9 @@ class DecoderV2:
         self.input_image_size = input_image_size
         self.image_shape = ori_image_shape
 
+    def set_h_w(self, h, w):
+        self.image_shape = [h, w]
+
     def ssd_correct_boxes(self, box_xy, box_wh, input_shape, image_shape, letterbox_image):
         # -----------------------------------------------------------------#
         #   把y轴放前面是因为方便预测框和图像的宽高进行相乘
@@ -339,9 +342,9 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
         print(f"No object detected")
         return
 
-    boxes = results[0][:, :4]
-    scores = results[0][:, 5]
-    classes = results[0][:, 4].astype(np.int32)
+    boxes = torch.from_numpy(results[0][:, :4])
+    scores = torch.from_numpy(results[0][:, 5])
+    classes = torch.from_numpy(results[0][:, 4]).to(torch.int32)
 
     show_detection_results(image_path=image_path,
                            dataset_name=cfg.dataset.dataset_name,
