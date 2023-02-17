@@ -378,6 +378,9 @@ class CenterNet(nn.Module):
         x = torch.permute(x, dims=(0, 2, 3, 1))
         return x
 
+    def __repr__(self):
+        return "dla34-centernet"
+
 
 if __name__ == '__main__':
     sample = torch.randn(1, 3, 384, 384, dtype=torch.float32)

@@ -39,7 +39,6 @@ class Config:
         # 训练参数
         def __init__(self):
             # 恢复训练时加载的checkpoint文件，""表示从epoch=0开始训练
-            # 测试时也需要在这里指定checkpoint文件
             self.resume_training = ""
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1

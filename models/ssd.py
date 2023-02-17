@@ -176,3 +176,6 @@ class SSD(nn.Module):
         conf = torch.reshape(conf, shape=(conf.shape[0], -1, self.num_classes))  # (batch, 8732, self.num_classes)
 
         return loc, conf
+
+    def __repr__(self):
+        return f"{self.backbone_name}-ssd"
