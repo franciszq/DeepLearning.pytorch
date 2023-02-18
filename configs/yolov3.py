@@ -15,6 +15,7 @@ class Config:
             self.num_classes = 20
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 416, 416)
+            # [w, h]
             self.anchor = [116, 90, 156, 198, 373, 326, 30, 61, 62, 45, 59, 119, 10, 13, 16, 30, 33, 23]
             self.anchor_index = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
             self.output_features = [13, 26, 52]

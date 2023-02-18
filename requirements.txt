@@ -4,3 +4,4 @@ tensorboard
 tqdm
 pycocotools
 matplotlib
+PyYAML
