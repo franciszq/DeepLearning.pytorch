@@ -4,9 +4,8 @@ import time
 import torch
 
 from configs import get_cfg
-from models.ssd import SSD
-from models.centernet import CenterNet
-from predict import ssd_decode, centernet_decode
+from models import SSD, CenterNet, YoloV3
+from predict import ssd_decode, centernet_decode, yolov3_decode
 
 WEIGHTS = "saves/ssd_voc_final.pth"
 IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000039.jpg"]
@@ -45,6 +44,8 @@ def main():
         detect_images(cfg, SSD, ssd_decode.detect_one_image, device)
     elif model_name == "centernet":
         detect_images(cfg, CenterNet, centernet_decode.detect_one_image, device)
+    elif model_name == "yolov3":
+        detect_images(cfg, YoloV3, yolov3_decode.detect_one_image, device)
 
     print(f"Total time: {(time.time() - t0):.2f}s")
 
