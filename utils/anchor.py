@@ -2,6 +2,7 @@ import itertools
 from math import sqrt
 
 import numpy as np
+import torch
 
 
 def generate_ssd_anchor(input_image_shape, anchor_sizes, feature_shapes, aspect_ratios):
@@ -96,3 +97,14 @@ def generate_ssd_anchor_v2(input_image_shape, anchor_sizes, feature_shapes, aspe
 
     anchors = np.concatenate(anchors, axis=0)  # (8732, 4)
     return anchors.astype(dtype=np.float32)
+
+
+def generate_yolo3_anchor(cfg, i, device):
+    c, h, w = cfg.arch.input_size
+    anchors = cfg.train.anchor
+    anchors = torch.tensor(anchors, dtype=torch.float32, device=device)
+    anchors = torch.reshape(anchors, shape=(-1, 2))
+    # 归一化
+    anchors[:, 0] /= w
+    anchors[:, 1] /= h
+    return anchors[3 * i: 3 * (i + 1), :]

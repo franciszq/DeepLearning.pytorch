@@ -84,6 +84,8 @@ class BaseTrainer:
         self.optimizer = None
         # 学习率调整策略
         self.lr_scheduler = None
+        # 损失函数
+        self.criterion = None
 
         self.metric_names = []
 
@@ -91,6 +93,7 @@ class BaseTrainer:
         self.initialize_model()
         self.set_optimizer()
         self.set_lr_scheduler()
+        self.set_criterion()
 
     def load_weights(self, weights=None):
         if weights:
@@ -110,6 +113,9 @@ class BaseTrainer:
         pass
 
     def set_lr_scheduler(self):
+        pass
+
+    def set_criterion(self):
         pass
 
     def train_loop(self, images, targets, scaler) -> List:
@@ -159,7 +165,7 @@ class BaseTrainer:
                     # 设置进度条后缀
                     postfix_info = {}
                     for p in range(n):
-                        postfix_info[self.metric_names[p]] = str(train_metrics[p].result())
+                        postfix_info[self.metric_names[p]] = f"{(train_metrics[p].result()):.5f}"
                     pbar.set_postfix(postfix_info)
 
             self.lr_scheduler.step()
