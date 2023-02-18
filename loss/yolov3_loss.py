@@ -15,10 +15,10 @@ def make_label(cfg, true_boxes):
     """
     anchors = cfg.arch.anchor
     anchors = torch.tensor(anchors, dtype=torch.float32)
-    # 归一化
-    anchors[:, 0] /= cfg.arch.input_size[2]
-    anchors[:, 1] /= cfg.arch.input_size[1]
     anchors = torch.reshape(anchors, shape=(1, -1, 2))  # shape: (1, 9, 2)
+    # 归一化
+    anchors[:, :, 0] /= cfg.arch.input_size[2]
+    anchors[:, :, 1] /= cfg.arch.input_size[1]
     anchor_index = cfg.arch.anchor_index
     features_size = cfg.arch.output_features
     num_classes = cfg.arch.num_classes

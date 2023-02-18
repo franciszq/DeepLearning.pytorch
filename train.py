@@ -2,8 +2,7 @@ import torch
 import argparse
 
 
-from trainer.ssd_train import SSDTrainer
-from trainer.centernet_train import CenterNetTrainer
+from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer
 from configs import get_cfg
 
 
@@ -25,6 +24,8 @@ def main():
         m = SSDTrainer(cfg, device)
     elif model_name == "centernet":
         m = CenterNetTrainer(cfg, device)
+    elif model_name == "yolov3":
+        m = Yolo3Trainer(cfg, device)
 
     if args.mode == "train":
         m.train()

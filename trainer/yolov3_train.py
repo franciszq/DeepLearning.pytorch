@@ -28,7 +28,9 @@ class Yolo3Trainer(BaseTrainer):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
 
     def set_lr_scheduler(self):
-        self.lr_scheduler = get_lr_scheduler("multi_step", self.optimizer, self.last_epoch)
+        self.lr_scheduler = get_lr_scheduler("multi_step", self.optimizer, self.last_epoch,
+                                             milestones=self.milestones,
+                                             gamma=self.gamma)
 
     def set_criterion(self):
         self.criterion = YoloLoss(self.cfg, self.device)
