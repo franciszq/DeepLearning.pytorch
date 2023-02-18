@@ -173,9 +173,9 @@ class BaseTrainer:
             if epoch % self.save_interval == 0:
                 CheckPoint.save(self.model, self.optimizer, None, epoch,
                                 path=Path(self.save_path).joinpath(
-                                    f"{str(self.model)}_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
+                                    f"{self.model.get_model_name()}_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
         if self.tensorboard_on:
             writer.close()
         # 保存最终模型
         CheckPoint.save(self.model, self.optimizer, None, self.total_epoch - 1,
-                        path=Path(self.save_path).joinpath(f"{str(self.model)}_{self.dataset_name.lower()}_final.pth"))
+                        path=Path(self.save_path).joinpath(f"{self.model.get_model_name()}_{self.dataset_name.lower()}_final.pth"))

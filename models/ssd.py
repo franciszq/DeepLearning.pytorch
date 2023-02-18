@@ -177,5 +177,5 @@ class SSD(nn.Module):
 
         return loc, conf
 
-    def __repr__(self):
+    def get_model_name(self):
         return f"{self.backbone_name}-ssd"

@@ -378,7 +378,7 @@ class CenterNet(nn.Module):
         x = torch.permute(x, dims=(0, 2, 3, 1))
         return x
 
-    def __repr__(self):
+    def get_model_name(self):
         return "dla34-centernet"
 
 

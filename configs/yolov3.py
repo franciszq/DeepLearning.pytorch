@@ -35,13 +35,13 @@ class Config:
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
-            self.epoch = 100
+            self.epoch = 300
             self.batch_size = 8
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
-            self.milestones = [40, 70]
+            self.milestones = [200]
             self.gamma = 0.1
 
             # 是否使用预训练权重

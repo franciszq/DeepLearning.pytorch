@@ -129,3 +129,6 @@ class YoloV3(nn.Module):
         _, o3 = self.block3(y3)
         return o1, o2, o3
 
+    def get_model_name(self):
+        return "YoloV3"
+
