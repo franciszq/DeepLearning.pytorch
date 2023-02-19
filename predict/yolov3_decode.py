@@ -30,11 +30,11 @@ def predict_bounding_bbox(num_classes, feature_map, anchors, device, is_training
 
 
 class Decoder:
-    def __init__(self, cfg, device):
+    def __init__(self, cfg, conf_threshold, device):
         self.cfg = cfg
         self.device = device
         self.num_classes = cfg.arch.num_classes
-        self.conf_threshold = cfg.decode.conf_threshold
+        self.conf_threshold = conf_threshold
         self.iou_threshold = cfg.decode.iou_threshold
 
     def _yolo_post_process(self, feature, scale_type):
@@ -77,6 +77,7 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
     image = image.to(device)
 
     decoder = Decoder(cfg,
+                      conf_threshold=cfg.decode.conf_threshold,
                       device=device)
 
     with torch.no_grad():

@@ -1,10 +1,13 @@
+import os
 from typing import List
 
 import torch
 
 from data.yolov3_dataloader import Yolo3Loader
 from loss.yolov3_loss import YoloLoss, make_label
+from mAP.eval import evaluate_pipeline
 from models.yolov3 import YoloV3
+from predict.yolov3_decode import Decoder
 from trainer.base import BaseTrainer
 from utils.lr_scheduler import get_optimizer, get_lr_scheduler
 
@@ -58,3 +61,24 @@ class Yolo3Trainer(BaseTrainer):
             self.optimizer.step()
 
         return [loss, loc_loss, conf_loss, prob_loss]
+
+    def evaluate(self,
+                 weights=None,
+                 subset='val',
+                 skip=False):
+
+        # 加载权重
+        if weights is not None:
+            self.load_weights(weights)
+        # 切换为'eval'模式
+        self.model.eval()
+
+        evaluate_pipeline(model=self.model,
+                          decoder=Decoder(self.cfg,
+                                          conf_threshold=0.02,
+                                          device=self.device),
+                          input_image_size=self.input_image_size[1:],
+                          map_out_root=os.path.join(self.result_path, "map"),
+                          subset=subset,
+                          device=self.device,
+                          skip=skip)

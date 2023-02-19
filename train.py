@@ -26,6 +26,8 @@ def main():
         m = CenterNetTrainer(cfg, device)
     elif model_name == "yolov3":
         m = Yolo3Trainer(cfg, device)
+    else:
+        raise ValueError(f"Unsupported model: {model_name}")
 
     if args.mode == "train":
         m.train()
