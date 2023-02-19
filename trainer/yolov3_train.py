@@ -12,7 +12,10 @@ from utils.lr_scheduler import get_optimizer, get_lr_scheduler
 class Yolo3Trainer(BaseTrainer):
     def __init__(self, cfg, device):
         super().__init__(cfg, device)
-        self.metric_names.extend(["Train/loss", "Train/loc_loss", "Train/conf_loss", "Train/prob_loss"])
+        # 损失函数的返回值要与这里的metrics_name一一对应
+        self.metric_names = ["loss", "loc_loss", "conf_loss", "prob_loss"]
+        # 是否在tqdm进度条中显示上述metrics
+        self.show_option = [True, False, False, False]
 
     def initialize_model(self):
         self.model = YoloV3(self.cfg)
