@@ -18,7 +18,7 @@ def generate_ssd_anchor(input_image_shape, anchor_sizes, feature_shapes, aspect_
     anchors = []
     for i, s in enumerate(feature_shapes):
         sk1 = anchor_sizes[i] / image_w
-        sk2 = anchor_sizes[i+1] / image_h
+        sk2 = anchor_sizes[i + 1] / image_h
         sk3 = sqrt(sk1 * sk2)
         all_sizes = [(sk1, sk1), (sk3, sk3)]
 
@@ -99,12 +99,19 @@ def generate_ssd_anchor_v2(input_image_shape, anchor_sizes, feature_shapes, aspe
     return anchors.astype(dtype=np.float32)
 
 
-def generate_yolo3_anchor(cfg, i, device):
+def generate_yolo3_anchor(cfg, device, idx=None):
     c, h, w = cfg.arch.input_size
     anchors = cfg.arch.anchor
-    anchors = torch.tensor(anchors, dtype=torch.float32, device=device)
+    anchors = torch.tensor(anchors, dtype=torch.float32)
     anchors = torch.reshape(anchors, shape=(-1, 2))
     # 归一化
     anchors[:, 0] /= w
     anchors[:, 1] /= h
-    return anchors[3 * i: 3 * (i + 1), :]
+
+    if device is not None:
+        anchors = anchors.to(device)
+
+    if idx is None:
+        return anchors
+    else:
+        return anchors[3 * idx: 3 * (idx + 1), :]

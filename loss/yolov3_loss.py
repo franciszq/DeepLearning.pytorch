@@ -13,12 +13,8 @@ def make_label(cfg, true_boxes):
     :param true_boxes: Tensor, shape: (batch_size, N, 5)
     :return:
     """
-    anchors = cfg.arch.anchor
-    anchors = torch.tensor(anchors, dtype=torch.float32)
-    anchors = torch.reshape(anchors, shape=(1, -1, 2))  # shape: (1, 9, 2)
-    # 归一化
-    anchors[:, :, 0] /= cfg.arch.input_size[2]
-    anchors[:, :, 1] /= cfg.arch.input_size[1]
+    anchors = generate_yolo3_anchor(cfg, None)
+    anchors = torch.unsqueeze(anchors, dim=0)  # shape: (1, 9, 2)
     anchor_index = cfg.arch.anchor_index
     features_size = cfg.arch.output_features
     num_classes = cfg.arch.num_classes
@@ -75,12 +71,12 @@ class YoloLoss:
 
             pred_xy, pred_wh, grid, pred_features = predict_bounding_bbox(num_classes=self.num_classes,
                                                                           feature_map=pred[i],
-                                                                          anchors=generate_yolo3_anchor(self.cfg, i, self.device),
+                                                                          anchors=generate_yolo3_anchor(self.cfg, self.device, i),
                                                                           device=self.device,
                                                                           is_training=True)
             pred_box = torch.cat((pred_xy, pred_wh), dim=-1)
             true_xy_offset = target[i][..., 0:2] * self.grid_shape[i] - grid
-            true_wh_offset = torch.log(target[i][..., 2:4] / generate_yolo3_anchor(self.cfg, i, self.device))
+            true_wh_offset = torch.log(target[i][..., 2:4] / generate_yolo3_anchor(self.cfg, self.device, i))
             true_wh_offset = torch.where(true_object_mask_bool, true_wh_offset,
                                          torch.zeros_like(true_wh_offset, dtype=torch.float32, device=self.device))
 

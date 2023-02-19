@@ -39,8 +39,7 @@ class Decoder:
 
     def _yolo_post_process(self, feature, scale_type):
         box_xy, box_wh, confidence, class_prob = predict_bounding_bbox(self.num_classes, feature,
-                                                                       generate_yolo3_anchor(self.cfg, scale_type,
-                                                                                             self.device),
+                                                                       generate_yolo3_anchor(self.cfg, self.device, scale_type),
                                                                        self.device, is_training=False)
         # boxes = reverse_letter_box(self.input_image_h, self.input_image_w, self.cfg["Train"]["input_size"],
         #                            torch.cat((box_xy, box_wh), dim=-1))
