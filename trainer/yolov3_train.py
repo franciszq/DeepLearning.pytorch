@@ -6,7 +6,7 @@ import torch
 from data.yolov3_dataloader import Yolo3Loader
 from loss.yolov3_loss import YoloLoss, make_label
 from mAP.eval import evaluate_pipeline
-from models.yolov3 import YoloV3
+from models.yolov3_model import YoloV3
 from predict.yolov3_decode import Decoder
 from trainer.base import BaseTrainer
 from utils.lr_scheduler import get_optimizer, get_lr_scheduler

@@ -1,3 +1,3 @@
-from .centernet import CenterNet
-from .yolov3 import YoloV3
-from .ssd import SSD
+from .centernet_model import CenterNet
+from .yolov3_model import YoloV3
+from .ssd_model import SSD

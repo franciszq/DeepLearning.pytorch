@@ -11,7 +11,7 @@ from data.centernet_dataloader import CenterNetLoader
 from data.centernet_target import TargetGenerator
 from loss.centernet_loss import CombinedLoss
 from mAP.eval import evaluate_pipeline
-from models.centernet import CenterNet
+from models.centernet_model import CenterNet
 from predict.centernet_decode import Decoder
 from trainer.base import Pipeline
 from utils.ckpt import CheckPoint

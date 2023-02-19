@@ -10,7 +10,7 @@ from configs.ssd import Config
 from data.ssd_dataloader import SSDLoader, SSDLoaderV2
 from loss.multi_box_loss import MultiBoxLoss, MultiBoxLossV2
 from mAP.eval import evaluate_pipeline
-from models.ssd import SSD
+from models.ssd_model import SSD
 from predict.ssd_decode import Decoder, DecoderV2
 from trainer.base import Pipeline
 from utils.anchor import generate_ssd_anchor, generate_ssd_anchor_v2
