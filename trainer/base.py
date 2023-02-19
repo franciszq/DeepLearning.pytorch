@@ -157,6 +157,8 @@ class BaseTrainer:
                     # 当前学习率
                     current_lr = self.optimizer.state_dict()['param_groups'][0]['lr']
                     if self.tensorboard_on:
+                        writer.add_scalar(tag="Learning rate", scalar_value=current_lr,
+                                          global_step=epoch * len(self.train_dataloader) + i)
                         for k in range(n):
                             writer.add_scalar(tag=f"Train/{self.metric_names[k]}",
                                               scalar_value=metrics[k].item(),
