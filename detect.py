@@ -7,8 +7,8 @@ from configs import get_cfg
 from models import SSD, CenterNet, YoloV3
 from predict import ssd_decode, centernet_decode, yolov3_decode
 
-WEIGHTS = "saves/ssd_voc_final.pth"
-IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000039.jpg"]
+WEIGHTS = "saves/YoloV3_voc_epoch-100.pth"
+IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg", "test/2007_000039.jpg"]
 
 
 def parse_args():

@@ -38,7 +38,7 @@ class Decoder:
         self.iou_threshold = cfg.decode.iou_threshold
 
     def _yolo_post_process(self, feature, scale_type):
-        box_xy, box_wh, confidence, class_prob = predict_bounding_bbox(self.cfg, feature,
+        box_xy, box_wh, confidence, class_prob = predict_bounding_bbox(self.num_classes, feature,
                                                                        generate_yolo3_anchor(self.cfg, scale_type,
                                                                                              self.device),
                                                                        self.device, is_training=False)
@@ -61,7 +61,7 @@ class Decoder:
             boxes_scores_list.append(boxes_scores)
         boxes = torch.cat(boxes_list, dim=0)
         scores = torch.cat(boxes_scores_list, dim=0)
-        boxes, scores, classes = yolo3_nms(self.cfg, self.conf_threshold, self.iou_threshold, boxes, scores,
+        boxes, scores, classes = yolo3_nms(self.num_classes, self.conf_threshold, self.iou_threshold, boxes, scores,
                                            self.device)
         scores = torch.squeeze(scores, dim=-1)
         return boxes, scores, classes
