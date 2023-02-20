@@ -88,7 +88,7 @@ class BaseTrainer:
         self.criterion = None
 
         self.metric_names = []
-        self.show_optional = []
+        self.show_option = []
 
         self.load_data()
         self.initialize_model()
@@ -168,7 +168,7 @@ class BaseTrainer:
                     # 设置进度条后缀
                     postfix_info = {}
                     for p in range(n):
-                        if self.show_optional[p]:
+                        if self.show_option[p]:
                             postfix_info[self.metric_names[p]] = f"{(train_metrics[p].result()):.5f}"
                     pbar.set_postfix(postfix_info)
 
