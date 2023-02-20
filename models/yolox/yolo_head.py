@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from utils.iou import bboxes_iou
-from .loss import IOUloss
+from loss.iou_loss import IOUloss
 from .network_blocks import BaseConv, DWConv
 
 

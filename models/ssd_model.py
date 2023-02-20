@@ -53,7 +53,7 @@ class VGG(nn.Module):
         for i, l in enumerate(self.layers):
             x = l(x)
             if i == extract_index:
-                outputs.append(x.clone())
+                outputs.append(x)
         outputs.append(x)
         return outputs
 
@@ -74,20 +74,21 @@ class ExtraLayer(nn.Module):
         self.conv8 = nn.Conv2d(128, 256, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
+        outputs = []
         x = self.conv1(x)
         x = self.conv2(x)
-        o1 = x.clone()  # (batch, 512, 10, 10)
+        outputs.append(x)  # (batch, 512, 10, 10)
         x = self.conv3(x)
         x = self.conv4(x)
-        o2 = x.clone()  # (batch, 256, 5, 5)
+        outputs.append(x)  # (batch, 256, 5, 5)
         x = self.conv5(x)
         x = self.conv6(x)
-        o3 = x.clone()  # (batch, 256, 3, 3)
+        outputs.append(x)  # (batch, 256, 3, 3)
         x = self.conv7(x)
         x = self.conv8(x)
-        o4 = x.clone()  # (batch, 256, 1, 1)
+        outputs.append(x)  # (batch, 256, 1, 1)
 
-        return o1, o2, o3, o4
+        return outputs
 
 
 class L2Normalize(nn.Module):

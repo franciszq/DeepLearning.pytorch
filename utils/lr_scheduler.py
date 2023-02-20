@@ -33,6 +33,8 @@ def get_lr_scheduler(scheduler_name, optimizer, last_epoch, **kwargs):
                                                             milestones=kwargs["milestones"],
                                                             gamma=kwargs["gamma"],
                                                             last_epoch=last_epoch)
+    elif scheduler_name.lower() == "None":
+        lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda x: 1.0, last_epoch=last_epoch)
     else:
         raise ValueError(f"{scheduler_name} is not supported")
     return lr_scheduler

@@ -19,6 +19,7 @@ class Yolo3Trainer(BaseTrainer):
         self.metric_names = ["loss", "loc_loss", "conf_loss", "prob_loss"]
         # 是否在tqdm进度条中显示上述metrics
         self.show_option = [True, False, False, False]
+        self.overwrite_model_name()
 
     def initialize_model(self):
         self.model = YoloV3(self.cfg)

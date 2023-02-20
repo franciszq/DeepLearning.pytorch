@@ -79,6 +79,8 @@ class BaseTrainer:
         self.train_dataloader = None
         # 模型
         self.model = None
+        # 模型名称
+        self.model_name = None
 
         # 优化器
         self.optimizer = None
@@ -118,6 +120,12 @@ class BaseTrainer:
 
     def set_criterion(self):
         pass
+
+    def overwrite_model_name(self, model_name=None):
+        try:
+            self.model_name = self.model.get_model_name()
+        except Exception:
+            self.model_name = model_name
 
     def train_loop(self, images, targets, scaler) -> List:
         return []
@@ -177,9 +185,9 @@ class BaseTrainer:
             if epoch % self.save_interval == 0:
                 CheckPoint.save(self.model, self.optimizer, None, epoch,
                                 path=Path(self.save_path).joinpath(
-                                    f"{self.model.get_model_name()}_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
+                                    f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
         if self.tensorboard_on:
             writer.close()
         # 保存最终模型
         CheckPoint.save(self.model, self.optimizer, None, self.total_epoch - 1,
-                        path=Path(self.save_path).joinpath(f"{self.model.get_model_name()}_{self.dataset_name.lower()}_final.pth"))
+                        path=Path(self.save_path).joinpath(f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))

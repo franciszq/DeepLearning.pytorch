@@ -66,3 +66,5 @@ python detect.py --cfg configs/ssd.py
 
 ## 参考
 - https://github.com/bubbliiiing/ssd-pytorch
+- https://github.com/Megvii-BaseDetection/YOLOX
+- https://github.com/bubbliiiing/yolov7-pytorch
