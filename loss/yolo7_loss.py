@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from utils.bboxes import xywh_to_xyxy_torch, jaccard
+from utils.iou import yolo7_bbox_iou
 
 
 def smooth_BCE(eps=0.1):
@@ -92,7 +93,7 @@ class Yolo7Loss:
                 # -------------------------------------------#
                 #   计算预测框和真实框的回归损失
                 # -------------------------------------------#
-                iou = self.bbox_iou(box.T, selected_tbox, x1y1x2y2=False, CIoU=True)
+                iou = yolo7_bbox_iou(box.T, selected_tbox, x1y1x2y2=False, CIoU=True)
                 box_loss += (1.0 - iou).mean()
                 # -------------------------------------------#
                 #   根据预测结果的iou获得置信度损失的gt
