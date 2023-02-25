@@ -1,4 +1,3 @@
-
 class Config:
     def __init__(self):
         self.arch = self._Arch()
@@ -15,9 +14,12 @@ class Config:
             self.num_classes = 20
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 640, 640)
-            self.depth = 1.00
-            self.width = 1.00
-            self.act = "silu"
+            self.anchors = [
+                12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401
+            ]
+            self.anchors_mask = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
+            # 用到的yolov7的版本，l: yolov7, x: yolov7_x
+            self.phi = 'l'
 
     class _Dataset:
         # 数据集
@@ -63,6 +65,8 @@ class Config:
         # 损失函数
         def __init__(self):
             self.ignore_threshold = 0.5
+            # 标签平滑，一般在0.01以下
+            self.label_smoothing = 0
 
     class _Optimizer:
         # 优化器
