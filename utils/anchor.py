@@ -1,6 +1,6 @@
 import itertools
 from math import sqrt
-from configs.yolo7_cfg import Config
+from configs.yolo7 import Config
 
 import numpy as np
 import torch
@@ -121,4 +121,4 @@ def generate_yolo3_anchor(cfg, device, idx=None):
 def get_yolo7_anchors(cfg: Config):
     anchors_list = cfg.arch.anchors
     anchors = np.array(anchors_list, dtype=np.float32).reshape(-1, 2)
-    return anchors, len(anchors)
+    return anchors

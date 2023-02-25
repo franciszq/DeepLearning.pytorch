@@ -37,7 +37,7 @@ class Config:
             self.last_epoch = -1
 
             self.epoch = 100
-            self.batch_size = 8
+            self.batch_size = 4
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数

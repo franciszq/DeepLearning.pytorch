@@ -1,5 +1,5 @@
 import os
-from . import ssd, centernet, yolov3
+from . import ssd, centernet, yolov3, yolo7
 
 
 def get_cfg(filepath):
@@ -13,5 +13,8 @@ def get_cfg(filepath):
     elif filename == "yolov3.py":
         model_name = filename.split('.')[0]
         return yolov3.Config(), model_name
+    elif filename == "yolo7.py":
+        model_name = filename.split('.')[0]
+        return yolo7.Config(), model_name
     else:
         raise ValueError(f"Could not find {filepath}. Perhaps the corresponding module is not registered.")

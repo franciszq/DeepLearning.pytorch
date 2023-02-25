@@ -2,6 +2,8 @@ import numpy as np
 import torch.nn as nn
 import torch
 
+from configs.yolo7 import Config
+
 
 def autopad(k, p=None):
     if p is None:
@@ -351,8 +353,11 @@ def fuse_conv_and_bn(conv, bn):
 
 
 class Yolo7(nn.Module):
-    def __init__(self, anchors_mask, num_classes, phi):
+    def __init__(self, cfg: Config):
         super().__init__()
+        anchors_mask = cfg.arch.anchors_mask
+        num_classes = cfg.arch.num_classes
+        phi = cfg.arch.phi
         # -----------------------------------------------#
         #   定义了不同yolov7版本的参数
         # -----------------------------------------------#
@@ -500,3 +505,6 @@ class Yolo7(nn.Module):
         out0 = self.yolo_head_P5(P5)
 
         return [out0, out1, out2]
+
+    def get_model_name(self):
+        return "YoloV7"

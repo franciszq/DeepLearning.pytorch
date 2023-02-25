@@ -8,7 +8,7 @@ import xml.dom.minidom as xdom
 from torch.utils.data import Dataset
 import torchvision.transforms.functional as F
 
-from utils.image_process import read_image
+from utils.image_process import read_image, cv2_paste
 from utils.yaml_tools import load_yaml
 
 
@@ -18,7 +18,7 @@ def get_random_number(a=0.0, b=1.0):
 
 
 class SuperDataset(Dataset):
-    def __init__(self, dataset_name, input_shape, mosaic=True, mosaic_prob=0.5):
+    def __init__(self, dataset_name, input_shape, mosaic, mosaic_prob):
         """
 
         :param dataset_name: 数据集名称, 'voc' or 'coco'
@@ -40,9 +40,7 @@ class SuperDataset(Dataset):
         self.mosaic_prob = mosaic_prob
 
         if dataset_name == 'voc':
-            self.root, self.class_names, self.images, self.class2index = self._parse_voc()
-            # 所有xml文件路径的列表
-            self.xml_paths = [os.path.join(self.root, "Annotations", f"{e}.xml") for e in self.images]
+            self.root, self.class_names, self.images, self.xml_paths, self.class2index = self._parse_voc()
         else:
             # TODO COCO数据集解析
             pass
@@ -106,7 +104,7 @@ class SuperDataset(Dataset):
 
     def get_random_data(self, image, box):
         # 图像的高宽与目标高宽
-        iw, ih = image.size
+        ih, iw, _ = image.shape
         h, w = self.input_shape
 
         # 对图像进行缩放并且扭曲长和宽
@@ -126,8 +124,7 @@ class SuperDataset(Dataset):
         dx = int(get_random_number(0, w - nw))
         dy = int(get_random_number(0, h - nh))
         new_image = np.full(shape=[h, w, 3], fill_value=128, dtype=np.uint8)
-        new_image[dy:dy + nh, dx:dx + nw, :] = image
-        image = new_image
+        image = cv2_paste(new_image, image, dx, dy)
 
         # 翻转图像
         flip = get_random_number() < 0.5
@@ -210,8 +207,7 @@ class SuperDataset(Dataset):
         # 创建一张背景颜色为(128, 128, 128)的RGB图像，大小为(input_h, input_w)
         new_image = np.full(shape=[input_h, input_w, 3], fill_value=128, dtype=np.uint8)
         # 把图片贴在这张“背景”的相应位置
-        new_image[dy:dy + nh, dx:dx + nw, :] = image
-        image_data = new_image
+        image_data = cv2_paste(new_image, image, dx, dy)
 
         box_data = []
         if box.shape[0] > 0:
@@ -350,10 +346,12 @@ class SuperDataset(Dataset):
             image_names = f.read().strip().split('\n')
         # 所有图片路径的列表
         image_paths = [os.path.join(images_root, f"{e}.jpg") for e in image_names]
+        # 所有xml文件路径的列表
+        xml_paths = [os.path.join(voc_root, "Annotations", f"{e}.xml") for e in image_names]
         # voc类别名的列表
         class2index = dict((v, k) for k, v in enumerate(voc_class_names))
 
-        return voc_root, voc_class_names, image_paths, class2index
+        return voc_root, voc_class_names, image_paths, xml_paths, class2index
 
     def _parse_xml(self, xml):
         box_class_list = []

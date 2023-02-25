@@ -2,7 +2,7 @@ import torch
 import argparse
 
 
-from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer
+from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer, Yolo7Trainer
 from configs import get_cfg
 
 
@@ -26,6 +26,8 @@ def main():
         m = CenterNetTrainer(cfg, device)
     elif model_name == "yolov3":
         m = Yolo3Trainer(cfg, device)
+    elif model_name == "yolo7":
+        m = Yolo7Trainer(cfg, device)
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
