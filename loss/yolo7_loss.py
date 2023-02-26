@@ -42,6 +42,7 @@ class Yolo7Loss:
         #   batch,, 255, 40, 40 => batch,, 3, 40, 40, 85
         #   batch,, 255, 80, 80 => batch,, 3, 80, 80, 85
         # -------------------------------------------#
+        predictions = list(predictions)
         for i in range(len(predictions)):
             batch_size, _, h, w = predictions[i].size()
             predictions[i] = torch.reshape(predictions[i],

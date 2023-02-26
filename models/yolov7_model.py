@@ -504,7 +504,7 @@ class Yolo7(nn.Module):
         # ---------------------------------------------------#
         out0 = self.yolo_head_P5(P5)
 
-        return [out0, out1, out2]
+        return out0, out1, out2
 
     def get_model_name(self):
         return "YoloV7"
