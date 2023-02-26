@@ -10,7 +10,7 @@ from utils.visualize import show_detection_results
 def detect_one_image(cfg: Config, model, image_path, print_on, save_result, device):
     model.eval()
     # 处理单张图片
-    image = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:])
+    image = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:], letterbox=True)
     image = image.to(device)
     _, _, h, w = image.size()
     # 生成anchors
