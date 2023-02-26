@@ -90,7 +90,7 @@ def yolo7_nms(prediction, num_classes, input_shape, image_shape, letterbox_image
     #   将预测结果的格式转换成左上角右下角的格式。
     #   prediction  [batch_size, num_anchors, 85]
     # ----------------------------------------------------------#
-    prediction = xywh_to_xyxy_torch(prediction)
+    prediction = xywh_to_xyxy_torch(prediction, more=True)
 
     output = [None for _ in range(len(prediction))]
     for i, image_pred in enumerate(prediction):

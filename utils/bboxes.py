@@ -22,10 +22,11 @@ def xywh_to_xyxy(coords):
     return new_coords
 
 
-def xywh_to_xyxy_torch(coords):
+def xywh_to_xyxy_torch(coords, more=False):
     """
     坐标变换
     :param coords: torch.Tensor, 最后一维的4个数是坐标 (center_x, center_y, w, h)
+    :param more: 最后一维除了前4个数是坐标外，还有更多的数
     :return: torch.Tensor, 与输入的形状一致，最后一维的格式是(xmin, ymin, xmax, ymax)
     """
     cx = coords[..., 0:1]
@@ -39,6 +40,8 @@ def xywh_to_xyxy_torch(coords):
     ymax = cy + h / 2
 
     new_coords = torch.cat((xmin, ymin, xmax, ymax), dim=-1)
+    if more:
+        new_coords = torch.cat([new_coords, coords[..., 4:]], dim=-1)
     return new_coords
 
 

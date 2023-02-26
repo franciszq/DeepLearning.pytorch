@@ -30,7 +30,7 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
         preds = model(image)
         results = decoder(preds)
 
-    if len(results[0]) == 0:
+    if results[0] is None:
         print(f"No object detected")
         return
 
@@ -172,7 +172,7 @@ class Decoder:
             #   w 0 ~ 1 => 0 ~ 2 => 0 ~ 4 => 先验框的宽高调节范围为0~4倍
             #   h 0 ~ 1 => 0 ~ 2 => 0 ~ 4 => 先验框的宽高调节范围为0~4倍
             # ----------------------------------------------------------#
-            pred_boxes = torch.tensor(prediction[..., :4].shape, dtype=torch.float32, device=self.device)
+            pred_boxes = torch.zeros_like(prediction[..., :4])
             pred_boxes[..., 0] = x.detach() * 2. - 0.5 + grid_x
             pred_boxes[..., 1] = y.detach() * 2. - 0.5 + grid_y
             pred_boxes[..., 2] = (w.detach() * 2) ** 2 * anchor_w
@@ -183,9 +183,7 @@ class Decoder:
             _scale = torch.tensor([input_width, input_height, input_width, input_height],
                                   dtype=torch.float32,
                                   device=self.device)
-            output = torch.cat((pred_boxes.view(bs, -1, 4) / _scale,
-                                conf.view(bs, -1, 1), pred_cls.view(bs, -1, self.num_classes)), -1)
+            output = torch.cat((pred_boxes.reshape(bs, -1, 4) / _scale,
+                                conf.reshape(bs, -1, 1), pred_cls.reshape(bs, -1, self.num_classes)), -1)
             outputs.append(output.detach())
         return torch.cat(outputs, dim=1)
-
-

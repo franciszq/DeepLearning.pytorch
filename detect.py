@@ -7,15 +7,15 @@ from configs import get_cfg
 from models import SSD, CenterNet, YoloV3, Yolo7
 from predict import ssd_decode, centernet_decode, yolov3_decode, yolo7_decode
 
-WEIGHTS = "saves/YoloV3_voc_epoch-205.pth"
+WEIGHTS = "saves/YoloV7_voc_epoch-50.pth"
 IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg", "test/2007_000039.jpg"]
+CONFIG = "configs/yolo7.py"
 
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, required=True, help="experiment configure file name")
-    args = parser.parse_args()
-    return args
+# def parse_args():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('--cfg', type=str, required=True, help="experiment configure file name")
+#     args = parser.parse_args()
+#     return args
 
 
 def detect_images(cfg, model_class, decode_fn, device):
@@ -36,8 +36,7 @@ def detect_images(cfg, model_class, decode_fn, device):
 
 def main():
     t0 = time.time()
-    args = parse_args()
-    cfg, model_name = get_cfg(args.cfg)
+    cfg, model_name = get_cfg(CONFIG)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if model_name == "ssd":
