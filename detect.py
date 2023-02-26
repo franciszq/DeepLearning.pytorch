@@ -11,15 +11,11 @@ WEIGHTS = "saves/yolov7_weights.pth"
 SUBKEY = ""
 
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/000000000471.jpg"]
+IMAGE_PATHS = ["test/000000000471.jpg",
+               "test/000000000049.jpg",
+               "test/000000000625.jpg",]
 # 配置文件路径
 CONFIG = "configs/yolo7.py"
-
-# def parse_args():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--cfg', type=str, required=True, help="experiment configure file name")
-#     args = parser.parse_args()
-#     return args
 
 
 def detect_images(cfg, model_class, decode_fn, device):

@@ -1,6 +1,4 @@
 import torch
-import argparse
-
 
 from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer, Yolo7Trainer
 from configs import get_cfg
@@ -9,14 +7,6 @@ from configs import get_cfg
 CONFIG = "configs/yolo7.py"
 # 0：训练模式，1：验证模式
 MODE = 0
-
-
-# def parse_args():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--cfg', type=str, required=True, help="experiment configure file name")
-#     parser.add_argument('--mode', type=str, required=True, help="train, test or predict")
-#     args = parser.parse_args()
-#     return args
 
 
 def main():
