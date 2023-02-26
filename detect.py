@@ -7,8 +7,11 @@ from configs import get_cfg
 from models import SSD, CenterNet, YoloV3, Yolo7
 from predict import ssd_decode, centernet_decode, yolov3_decode, yolo7_decode
 
+# 权重文件位置
 WEIGHTS = "saves/YoloV7_voc_epoch-50.pth"
+# 测试图片路径的列表
 IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg", "test/2007_000039.jpg"]
+# 配置文件路径
 CONFIG = "configs/yolo7.py"
 
 # def parse_args():

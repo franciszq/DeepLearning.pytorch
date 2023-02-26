@@ -50,19 +50,13 @@ pip install -r requirements.txt
 
 ## 使用方法
 ### 训练
+修改`train.py`中的配置参数，将`MODE`改为0，然后运行`train.py`。
 
-```commandline
-python train.py --cfg configs/ssd.py --mode train
-```
 ### 验证模型的性能
-```commandline
-python train.py --cfg configs/ssd.py --mode test
-```
+修改`train.py`中的配置参数，将`MODE`改为1，然后运行`train.py`。
 
 ### 在图片上测试
-```commandline
-python detect.py --cfg configs/ssd.py
-```
+修改`detect.py`中的配置参数，然后运行`detect.py`。
 
 ## 参考
 - https://github.com/bubbliiiing/ssd-pytorch

@@ -5,21 +5,24 @@ import argparse
 from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer, Yolo7Trainer
 from configs import get_cfg
 
+# 配置文件路径
+CONFIG = "configs/yolo7.py"
+# 0：训练模式，1：验证模式
+MODE = 0
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, required=True, help="experiment configure file name")
-    parser.add_argument('--mode', type=str, required=True, help="train, test or predict")
-    args = parser.parse_args()
-    return args
+
+# def parse_args():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('--cfg', type=str, required=True, help="experiment configure file name")
+#     parser.add_argument('--mode', type=str, required=True, help="train, test or predict")
+#     args = parser.parse_args()
+#     return args
 
 
 def main():
-    args = parse_args()
-    cfg, model_name = get_cfg(args.cfg)
+    cfg, model_name = get_cfg(CONFIG)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    m = None
     if model_name == "ssd":
         m = SSDTrainer(cfg, device)
     elif model_name == "centernet":
@@ -31,9 +34,9 @@ def main():
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
-    if args.mode == "train":
+    if MODE == 0:
         m.train()
-    elif args.mode == "test":
+    elif MODE == 1:
         m.evaluate(weights="saves/ssd_voc_final.pth")
     else:
         raise ValueError(f"Unsupported mode：{args.mode}")
