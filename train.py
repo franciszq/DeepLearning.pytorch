@@ -39,7 +39,7 @@ def main():
     elif MODE == 1:
         m.evaluate(weights="saves/ssd_voc_final.pth")
     else:
-        raise ValueError(f"Unsupported mode：{args.mode}")
+        raise ValueError(f"Unsupported mode：{MODE}")
 
 
 if __name__ == '__main__':

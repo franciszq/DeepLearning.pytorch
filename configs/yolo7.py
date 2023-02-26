@@ -42,7 +42,7 @@ class Config:
             self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
-            self.milestones = []
+            self.milestones = [52]
             self.gamma = 0.1
 
             # 是否使用预训练权重
