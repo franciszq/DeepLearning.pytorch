@@ -1,8 +1,9 @@
+import numpy as np
 import torch
 from torchvision.ops import nms
 
 from utils.bboxes import xywh_to_xyxy_torch
-from utils.image_process import yolo_correct_boxes
+from utils.image_process import yolo_correct_boxes, reverse_letter_box_numpy
 from utils.iou import box_diou
 
 
@@ -143,5 +144,4 @@ def yolo7_nms(prediction, num_classes, input_shape, image_shape, letterbox_image
             output[i] = output[i].cpu().numpy()
             box_xy, box_wh = (output[i][:, 0:2] + output[i][:, 2:4]) / 2, output[i][:, 2:4] - output[i][:, 0:2]
             output[i][:, :4] = yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_image)
-
     return output

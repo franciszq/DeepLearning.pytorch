@@ -10,7 +10,7 @@ from utils.visualize import show_detection_results
 def detect_one_image(cfg: Config, model, image_path, print_on, save_result, device):
     model.eval()
     # 处理单张图片
-    image = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:], letterbox=True)
+    image = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:], letterbox=False)
     image = image.to(device)
     _, _, h, w = image.size()
     # 生成anchors
@@ -21,7 +21,7 @@ def detect_one_image(cfg: Config, model, image_path, print_on, save_result, devi
                       input_shape=cfg.arch.input_size[1:],
                       anchors_mask=cfg.arch.anchors_mask,
                       ori_image_shape=[h, w],
-                      letterbox_image=True,
+                      letterbox_image=False,
                       conf_threshold=cfg.decode.conf_threshold,
                       nms_threshold=cfg.decode.nms_threshold,
                       device=device)

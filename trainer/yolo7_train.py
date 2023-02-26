@@ -38,7 +38,8 @@ class Yolo7Trainer(BaseTrainer):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
 
     def set_lr_scheduler(self):
-        self.lr_scheduler = get_lr_scheduler("multi_step", self.optimizer, self.last_epoch,
+        self.lr_scheduler = get_lr_scheduler(self.cfg.optimizer.scheduler_name,
+                                             self.optimizer, self.last_epoch,
                                              milestones=self.milestones,
                                              gamma=self.gamma)
 

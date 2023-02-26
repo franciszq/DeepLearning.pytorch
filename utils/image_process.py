@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 
+from utils.bboxes import xywh_to_xyxy
+
 
 def read_image(image_path, mode='rgb'):
     """
@@ -61,6 +63,37 @@ def letter_box(image, size):
     new_image = cv2.copyMakeBorder(image, top, bottom, left, right, borderType=cv2.BORDER_CONSTANT,
                                    value=(128, 128, 128))
     return new_image, scale, [top, bottom, left, right]
+
+
+def reverse_letter_box_numpy(image_shape, input_shape, boxes, xywh=True):
+    """
+    letter_box的逆变换
+    :param image_shape: 输入网络的图片的原始形状 [h, w]
+    :param input_shape: List or Tuple 网络输入图片的固定大小 [H, W]
+    :param boxes: numpy.ndarray, shape: (..., 4(cx, cy, w, h))
+    :param xywh: Bool, True：boxes是(cx, cy, w, h)格式, False: boxes是(xmin, ymin, xmax, ymax)格式
+    :return: numpy.ndarray, shape: (..., 4(xmin, ymin, xmax, ymax))
+    """
+    # 转换为(xmin, ymin, xmax, ymax)格式
+    if xywh:
+        new_boxes = np.concatenate((boxes[..., 0:2] - boxes[..., 2:4] / 2, boxes[..., 0:2] + boxes[..., 2:4] / 2), axis=-1)
+    else:
+        new_boxes = boxes.copy()
+    new_boxes[..., ::2] *= input_shape[1]
+    new_boxes[..., 1::2] *= input_shape[0]
+
+    scale = max(image_shape[0] / input_shape[0], image_shape[1] / input_shape[1])
+    # 获取padding值
+    top = (input_shape[0] - image_shape[0] / scale) // 2
+    left = (input_shape[1] - image_shape[1] / scale) // 2
+    # 减去padding值，就是相对于原始图片的原点位置
+    new_boxes[..., 0] -= left
+    new_boxes[..., 2] -= left
+    new_boxes[..., 1] -= top
+    new_boxes[..., 3] -= top
+    # 缩放到原图尺寸
+    new_boxes *= scale
+    return new_boxes
 
 
 def reverse_letter_box(h, w, input_size, boxes, xywh=True):
@@ -125,28 +158,14 @@ def cv2_paste(img1, img2, x, y):
 
 
 def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_image):
-    # -----------------------------------------------------------------#
-    #   把y轴放前面是因为方便预测框和图像的宽高进行相乘
-    # -----------------------------------------------------------------#
-    box_yx = box_xy[..., ::-1]
-    box_hw = box_wh[..., ::-1]
-    input_shape = np.array(input_shape)
-    image_shape = np.array(image_shape)
-
+    box_xywh = np.concatenate([box_xy, box_wh], axis=-1)
     if letterbox_image:
-        # -----------------------------------------------------------------#
-        #   这里求出来的offset是图像有效区域相对于图像左上角的偏移情况
-        #   new_shape指的是宽高缩放情况
-        # -----------------------------------------------------------------#
-        new_shape = np.round(image_shape * np.min(input_shape / image_shape))
-        offset = (input_shape - new_shape) / 2. / input_shape
-        scale = input_shape / new_shape
-
-        box_yx = (box_yx - offset) * scale
-        box_hw *= scale
-
-    box_mins = box_yx - (box_hw / 2.)
-    box_maxes = box_yx + (box_hw / 2.)
-    boxes = np.concatenate([box_mins[..., 0:1], box_mins[..., 1:2], box_maxes[..., 0:1], box_maxes[..., 1:2]], axis=-1)
-    boxes *= np.concatenate([image_shape, image_shape], axis=-1)
-    return boxes
+        return reverse_letter_box_numpy(image_shape, input_shape,
+                                        box_xywh,
+                                        xywh=True)
+    else:
+        # 转换为(xmin, ymin, xmax, ymax)格式
+        box_x1y1x2y2 = xywh_to_xyxy(box_xywh)
+        box_x1y1x2y2[:, ::2] *= image_shape[1]
+        box_x1y1x2y2[:, 1::2] *= image_shape[0]
+        return box_x1y1x2y2

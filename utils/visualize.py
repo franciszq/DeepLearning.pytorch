@@ -28,13 +28,13 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
     """
     # 移除坐标不在图片大小范围内的检测框
     ori_image = cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-    ori_h, ori_w, _ = ori_image.shape
-    mask = torch.logical_and((boxes[:, 0] > 0), (boxes[:, 1] > 0))
-    mask = torch.logical_and(mask, (boxes[:, 2] < ori_w))
-    mask = torch.logical_and(mask, (boxes[:, 3] < ori_h))
-    boxes = boxes[mask]
-    scores = scores[mask]
-    class_indices = class_indices[mask]
+    # ori_h, ori_w, _ = ori_image.shape
+    # mask = torch.logical_and((boxes[:, 0] > 0), (boxes[:, 1] > 0))
+    # mask = torch.logical_and(mask, (boxes[:, 2] < ori_w))
+    # mask = torch.logical_and(mask, (boxes[:, 3] < ori_h))
+    # boxes = boxes[mask]
+    # scores = scores[mask]
+    # class_indices = class_indices[mask]
     n = boxes.size(0)
     if n == 0:
         # 没有检测到目标
