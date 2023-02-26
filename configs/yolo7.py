@@ -86,4 +86,4 @@ class Config:
         def __init__(self):
             self.test_results = "result"
             self.conf_threshold = 0.5
-            self.nms_threshold = 0.65
+            self.nms_threshold = 0.3

@@ -7,7 +7,7 @@ import torchvision.transforms.functional as TF
 
 from utils.anchor import generate_ssd_anchor, generate_ssd_anchor_v2
 from utils.bboxes import xyxy_to_xywh
-from utils.image_process import reverse_letter_box, read_image, letter_box
+from utils.image_process import reverse_letter_box, read_image, letter_box, yolo_correct_boxes
 from configs.ssd import Config
 from utils.visualize import show_detection_results
 
@@ -163,34 +163,6 @@ class DecoderV2:
     def set_h_w(self, h, w):
         self.image_shape = [h, w]
 
-    def ssd_correct_boxes(self, box_xy, box_wh, input_shape, image_shape, letterbox_image):
-        # -----------------------------------------------------------------#
-        #   把y轴放前面是因为方便预测框和图像的宽高进行相乘
-        # -----------------------------------------------------------------#
-        box_yx = box_xy[..., ::-1]
-        box_hw = box_wh[..., ::-1]
-        input_shape = np.array(input_shape)
-        image_shape = np.array(image_shape)
-
-        if letterbox_image:
-            # -----------------------------------------------------------------#
-            #   这里求出来的offset是图像有效区域相对于图像左上角的偏移情况
-            #   new_shape指的是宽高缩放情况
-            # -----------------------------------------------------------------#
-            new_shape = np.round(image_shape * np.min(input_shape / image_shape))
-            offset = (input_shape - new_shape) / 2. / input_shape
-            scale = input_shape / new_shape
-
-            box_yx = (box_yx - offset) * scale
-            box_hw *= scale
-
-        box_mins = box_yx - (box_hw / 2.)
-        box_maxes = box_yx + (box_hw / 2.)
-        boxes = np.concatenate([box_mins[..., 0:1], box_mins[..., 1:2], box_maxes[..., 0:1], box_maxes[..., 1:2]],
-                               axis=-1)
-        boxes *= np.concatenate([image_shape, image_shape], axis=-1)
-        return boxes
-
     def decode_boxes(self, mbox_loc, anchors, variances):
         # 获得先验框的宽与高
         anchor_width = anchors[:, 2] - anchors[:, 0]
@@ -288,8 +260,8 @@ class DecoderV2:
                 results[-1] = np.array(results[-1])
                 box_xy, box_wh = (results[-1][:, 0:2] + results[-1][:, 2:4]) / 2, results[-1][:, 2:4] - results[-1][:,
                                                                                                         0:2]
-                results[-1][:, :4] = self.ssd_correct_boxes(box_xy, box_wh, self.input_image_size, self.image_shape,
-                                                            True)
+                results[-1][:, :4] = yolo_correct_boxes(box_xy, box_wh, self.input_image_size, self.image_shape,
+                                                        True)
 
         return results
 

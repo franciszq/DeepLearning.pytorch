@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import torch
+import torchvision.transforms.functional as TF
 
 
 def read_image(image_path, mode='rgb'):
@@ -21,6 +22,24 @@ def read_image(image_path, mode='rgb'):
         return gray
     else:
         return image_array
+
+
+def read_image_and_convert_to_tensor(image_path, size, mode='rgb', letterbox=True):
+    """
+    使用opencv读取图像，并进行resize，之后转换为torch.Tensor
+    :param image_path: 图像文件路径
+    :param size: [h, w]
+    :param mode: 格式，'rgb', 'bgr', 'gray'
+    :param letterbox: 是否使用保持宽高比的resize方式
+    :return: torch.Tensor, shape=(1, c, h, w)
+    """
+    image_array = read_image(image_path, mode)
+    if letterbox:
+        image_array, _, _ = letter_box(image_array, size)
+    else:
+        image_array = cv2.resize(src=image_array, dsize=size[::-1], interpolation=cv2.INTER_CUBIC)
+    image = TF.to_tensor(image_array).unsqueeze(0)
+    return image
 
 
 def letter_box(image, size):
@@ -103,3 +122,31 @@ def cv2_paste(img1, img2, x, y):
     img1[ymin:ymax, xmin:xmax, :] = img2[ymin_:ymax_, xmin_:xmax_, :]
 
     return img1
+
+
+def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_image):
+    # -----------------------------------------------------------------#
+    #   把y轴放前面是因为方便预测框和图像的宽高进行相乘
+    # -----------------------------------------------------------------#
+    box_yx = box_xy[..., ::-1]
+    box_hw = box_wh[..., ::-1]
+    input_shape = np.array(input_shape)
+    image_shape = np.array(image_shape)
+
+    if letterbox_image:
+        # -----------------------------------------------------------------#
+        #   这里求出来的offset是图像有效区域相对于图像左上角的偏移情况
+        #   new_shape指的是宽高缩放情况
+        # -----------------------------------------------------------------#
+        new_shape = np.round(image_shape * np.min(input_shape / image_shape))
+        offset = (input_shape - new_shape) / 2. / input_shape
+        scale = input_shape / new_shape
+
+        box_yx = (box_yx - offset) * scale
+        box_hw *= scale
+
+    box_mins = box_yx - (box_hw / 2.)
+    box_maxes = box_yx + (box_hw / 2.)
+    boxes = np.concatenate([box_mins[..., 0:1], box_mins[..., 1:2], box_maxes[..., 0:1], box_maxes[..., 1:2]], axis=-1)
+    boxes *= np.concatenate([image_shape, image_shape], axis=-1)
+    return boxes
