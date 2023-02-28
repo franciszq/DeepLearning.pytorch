@@ -8,7 +8,7 @@ import torchvision.transforms.functional as TF
 from utils.anchor import generate_ssd_anchor, generate_ssd_anchor_v2
 from utils.bboxes import xyxy_to_xywh
 from utils.image_process import reverse_letter_box, read_image, letter_box, yolo_correct_boxes
-from configs.ssd import Config
+from configs.ssd_cfg import Config
 from utils.visualize import show_detection_results
 
 

@@ -1,6 +1,6 @@
 import itertools
 from math import sqrt
-from configs.yolo7 import Config
+from configs.yolo7_cfg import Config
 
 import numpy as np
 import torch

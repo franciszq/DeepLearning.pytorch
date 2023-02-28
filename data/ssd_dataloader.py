@@ -3,7 +3,7 @@ import torch
 
 from data.dataloader import PublicDataLoader
 from utils.bboxes import jaccard
-from configs.ssd import Config
+from configs.ssd_cfg import Config
 import torchvision.transforms.functional as F
 
 

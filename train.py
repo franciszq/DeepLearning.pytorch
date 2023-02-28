@@ -4,7 +4,7 @@ from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer, Yolo7Trainer
 from configs import get_cfg
 
 # 配置文件路径
-CONFIG = "configs/yolo7.py"
+CONFIG = "configs/yolo7_cfg.py"
 # 0：训练模式，1：验证模式
 MODE = 0
 

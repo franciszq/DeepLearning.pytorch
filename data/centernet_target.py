@@ -1,6 +1,6 @@
 import torch
 
-from configs.centernet import Config
+from configs.centernet_cfg import Config
 from utils.gaussian import gaussian_radius, draw_umich_gaussian
 
 

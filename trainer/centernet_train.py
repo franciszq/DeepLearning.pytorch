@@ -6,7 +6,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from configs.centernet import Config
+from configs.centernet_cfg import Config
 from data.centernet_dataloader import CenterNetLoader
 from data.centernet_target import TargetGenerator
 from loss.centernet_loss import CombinedLoss

@@ -3,7 +3,7 @@ import torch
 from utils.anchor import get_yolo7_anchors
 from utils.image_process import read_image_and_convert_to_tensor, read_image
 from utils.nms import yolo7_nms
-from configs.yolo7 import Config
+from configs.yolo7_cfg import Config
 from utils.visualize import show_detection_results
 
 

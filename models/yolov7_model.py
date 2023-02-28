@@ -2,7 +2,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-from configs.yolo7 import Config
+from configs.yolo7_cfg import Config
 
 
 def autopad(k, p=None):

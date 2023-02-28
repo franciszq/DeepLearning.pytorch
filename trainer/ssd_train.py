@@ -6,7 +6,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from configs.ssd import Config
+from configs.ssd_cfg import Config
 from data.ssd_dataloader import SSDLoader, SSDLoaderV2
 from loss.multi_box_loss import MultiBoxLoss, MultiBoxLossV2
 from mAP.eval import evaluate_pipeline

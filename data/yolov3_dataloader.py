@@ -1,4 +1,4 @@
-from configs.yolov3 import Config
+from configs.yolov3_cfg import Config
 from data.dataloader import PublicDataLoader
 from data.transforms import TargetPadding
 

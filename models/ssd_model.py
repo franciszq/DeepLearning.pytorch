@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from configs.ssd import Config
+from configs.ssd_cfg import Config
 from models.mobilenet import MobileNetV1
 
 

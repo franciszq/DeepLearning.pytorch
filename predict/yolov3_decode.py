@@ -1,6 +1,6 @@
 import torch
 
-from configs.yolov3 import Config
+from configs.yolov3_cfg import Config
 from utils.anchor import generate_yolo3_anchor
 from utils.image_process import read_image, letter_box, reverse_letter_box
 from utils.nms import yolo3_nms

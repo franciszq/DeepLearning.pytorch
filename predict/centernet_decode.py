@@ -1,6 +1,6 @@
 import torch
 
-from configs.centernet import Config
+from configs.centernet_cfg import Config
 from loss.centernet_loss import RegL1Loss
 from utils.bboxes import xywh_to_xyxy_torch
 from utils.image_process import read_image, letter_box, reverse_letter_box

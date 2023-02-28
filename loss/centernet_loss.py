@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from configs.centernet import Config
+from configs.centernet_cfg import Config
 
 
 class FocalLoss:

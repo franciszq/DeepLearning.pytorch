@@ -6,16 +6,14 @@ from models import SSD, CenterNet, YoloV3, Yolo7
 from predict import ssd_decode, centernet_decode, yolov3_decode, yolo7_decode
 
 # 权重文件位置
-WEIGHTS = "saves/yolov7_weights.pth"
+WEIGHTS = "saves/YoloV7_voc_epoch-85.pth"
 # ckpt有没有子级key，本项目保存的模型的state_dict()在checkpoint的"model" key下
-SUBKEY = ""
+SUBKEY = "model"
 
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/000000000471.jpg",
-               "test/000000000049.jpg",
-               "test/000000000625.jpg",]
+IMAGE_PATHS = ["test/2007_000032.jpg"]
 # 配置文件路径
-CONFIG = "configs/yolo7.py"
+CONFIG = "configs/yolo7_cfg.py"
 
 
 def detect_images(cfg, model_class, decode_fn, device):
