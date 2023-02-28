@@ -9,7 +9,7 @@ from mAP.eval import evaluate_pipeline
 from models.yolov3_model import YoloV3
 from predict.yolov3_decode import Decoder
 from trainer.base import BaseTrainer
-from utils.lr_scheduler import get_optimizer, get_lr_scheduler
+from trainer.lr_scheduler import get_optimizer, get_lr_scheduler
 
 
 class Yolo3Trainer(BaseTrainer):

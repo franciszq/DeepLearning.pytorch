@@ -9,7 +9,7 @@ from loss.yolo7_loss import Yolo7Loss
 from models.yolov7_model import Yolo7
 from trainer.base import BaseTrainer
 from utils.anchor import get_yolo7_anchors
-from utils.lr_scheduler import get_optimizer, get_lr_scheduler
+from trainer.lr_scheduler import get_optimizer, get_lr_scheduler
 
 
 class Yolo7Trainer(BaseTrainer):

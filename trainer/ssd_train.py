@@ -7,16 +7,15 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from configs.ssd_cfg import Config
-from data.ssd_dataloader import SSDLoader, SSDLoaderV2
-from loss.multi_box_loss import MultiBoxLoss, MultiBoxLossV2
+from data.ssd_dataloader import SSDLoaderV2
+from loss.multi_box_loss import MultiBoxLossV2
 from mAP.eval import evaluate_pipeline
 from models.ssd_model import SSD
-from predict.ssd_decode import Decoder, DecoderV2
-from trainer.base import Pipeline
-from utils.anchor import generate_ssd_anchor, generate_ssd_anchor_v2
+from predict.ssd_decode import DecoderV2
+from trainer.base import Pipeline, MeanMetric
+from utils.anchor import generate_ssd_anchor_v2
 from utils.ckpt import CheckPoint
-from utils.lr_scheduler import warm_up_scheduler
-from utils.metrics import MeanMetric
+from trainer.lr_scheduler import warm_up_scheduler
 
 
 class SSDTrainer(Pipeline):

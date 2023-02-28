@@ -13,10 +13,9 @@ from loss.centernet_loss import CombinedLoss
 from mAP.eval import evaluate_pipeline
 from models.centernet_model import CenterNet
 from predict.centernet_decode import Decoder
-from trainer.base import Pipeline
+from trainer.base import Pipeline, MeanMetric
 from utils.ckpt import CheckPoint
-from utils.lr_scheduler import warm_up_scheduler
-from utils.metrics import MeanMetric
+from trainer.lr_scheduler import warm_up_scheduler
 
 
 class CenterNetTrainer(Pipeline):
