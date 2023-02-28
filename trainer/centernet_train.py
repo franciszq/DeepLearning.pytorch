@@ -58,6 +58,7 @@ class CenterNetTrainer(Pipeline):
         self._load_data()
         # 创建网络模型
         self._initialize_model()
+        self.model_name = self.model.get_model_name()
 
         # 损失函数
         self.criterion = CombinedLoss(self.cfg)
@@ -83,13 +84,13 @@ class CenterNetTrainer(Pipeline):
         self.model = CenterNet(self.cfg)
         self.model.to(device=self.device)
 
-    def load_weights(self, weights=None):
-        if weights:
-            return CheckPoint.load(path=weights, device=self.device,
-                                   model=self.model, optimizer=self.optimizer)
-        else:
-            return CheckPoint.load(path=self.resume_training_weights, device=self.device,
-                                   model=self.model, optimizer=self.optimizer)
+    # def load_weights(self, weights=None):
+    #     if weights:
+    #         return CheckPoint.load(path=weights, device=self.device,
+    #                                model=self.model, optimizer=self.optimizer)
+    #     else:
+    #         return CheckPoint.load(path=self.resume_training_weights, device=self.device,
+    #                                model=self.model, optimizer=self.optimizer)
 
     def train(self, *args, **kwargs):
         loss_mean = MeanMetric()
@@ -104,8 +105,12 @@ class CenterNetTrainer(Pipeline):
 
         if self.resume_training_weights != "":
             # 从checkpoint恢复训练
-            _, _, _, start_epoch = self.load_weights()
-            assert self.last_epoch == start_epoch, f"last epoch should be {start_epoch}, but got {self.last_epoch}"
+            CheckPoint.load(path=self.resume_training_weights,
+                            device=self.device,
+                            model=self.model,
+                            pure=False,
+                            optimizer=self.optimizer,
+                            scheduler=self.lr_scheduler)
             print(f"After loading weights from {self.resume_training_weights}, it will resume training soon.")
 
         if self.mixed_precision:
@@ -155,15 +160,16 @@ class CenterNetTrainer(Pipeline):
             self.lr_scheduler.step()
 
             if epoch % self.save_interval == 0:
-                CheckPoint.save(self.model, self.optimizer, None, epoch,
-                                path=Path(self.save_path).joinpath(
-                                    f"centernet_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
+                CheckPoint.save(model=self.model, path=Path(self.save_path).joinpath(
+                    f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"),
+                                optimizer=self.optimizer,
+                                scheduler=self.lr_scheduler)
 
         if self.tensorboard_on:
             writer.close()
         # 保存最终模型
-        CheckPoint.save(self.model, self.optimizer, None, self.total_epoch - 1,
-                        path=Path(self.save_path).joinpath(f"centernet_{self.dataset_name.lower()}_final.pth"))
+        CheckPoint.save(model=self.model,
+                        path=Path(self.save_path).joinpath(f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))
 
     def evaluate(self,
                  weights=None,
@@ -171,8 +177,10 @@ class CenterNetTrainer(Pipeline):
                  skip=False):
         # 加载权重
         if weights is not None:
-            self.load_weights(weights)
-            # self.model.load_state_dict(torch.load(weights, map_location=self.device))
+            CheckPoint.load(path=weights,
+                            device=self.device,
+                            model=self.model,
+                            pure=False)
         # 切换为'eval'模式
         self.model.eval()
 

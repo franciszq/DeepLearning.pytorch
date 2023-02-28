@@ -27,29 +27,6 @@ class MeanMetric:
         self.__init__()
 
 
-class Pipeline(metaclass=ABCMeta):
-
-    @abstractmethod
-    def _load_data(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def _initialize_model(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def load_weights(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def train(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def evaluate(self, *args, **kwargs):
-        pass
-
-
 class BaseTrainer:
     def __init__(self, cfg, device):
         self.device = device
@@ -113,14 +90,6 @@ class BaseTrainer:
         self.set_lr_scheduler()
         self.set_criterion()
 
-    def load_weights(self, weights=None):
-        if weights:
-            return CheckPoint.load(path=weights, device=self.device,
-                                   model=self.model, optimizer=self.optimizer)
-        else:
-            return CheckPoint.load(path=self.resume_training_weights, device=self.device,
-                                   model=self.model, optimizer=self.optimizer)
-
     def initialize_model(self):
         pass
 
@@ -156,11 +125,16 @@ class BaseTrainer:
             except Exception:
                 traceback.print_exc()
 
-        if self.resume_training_weights != "":
+        if not self.resume_training_weights:
             # 从checkpoint恢复训练
-            _, _, _, start_epoch = self.load_weights()
-            assert self.last_epoch == start_epoch, f"last epoch should be {start_epoch}, but got {self.last_epoch}"
-            print(f"After loading weights from {self.resume_training_weights}, it will resume training soon.")
+            CheckPoint.load(path=self.resume_training_weights,
+                            device=self.device,
+                            model=self.model,
+                            pure=False,
+                            optimizer=self.optimizer,
+                            scheduler=self.lr_scheduler)
+            print(
+                f"After loading weights from {self.resume_training_weights}, it will resume training from epoch-{self.last_epoch}.")
 
         scaler = None
         if self.mixed_precision:
@@ -198,11 +172,35 @@ class BaseTrainer:
             self.lr_scheduler.step()
 
             if epoch % self.save_interval == 0:
-                CheckPoint.save(self.model, self.optimizer, None, epoch,
-                                path=Path(self.save_path).joinpath(
-                                    f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"))
+                CheckPoint.save(model=self.model, path=Path(self.save_path).joinpath(
+                    f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"),
+                                optimizer=self.optimizer,
+                                scheduler=self.lr_scheduler)
         if self.tensorboard_on:
             writer.close()
         # 保存最终模型
-        CheckPoint.save(self.model, self.optimizer, None, self.total_epoch - 1,
+        CheckPoint.save(model=self.model,
                         path=Path(self.save_path).joinpath(f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))
+
+
+class Pipeline(metaclass=ABCMeta):
+
+    @abstractmethod
+    def _load_data(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def _initialize_model(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def load_weights(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def train(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def evaluate(self, *args, **kwargs):
+        pass

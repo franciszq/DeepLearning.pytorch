@@ -3,30 +3,28 @@ import torch
 
 class CheckPoint:
     @staticmethod
-    def save(model, optimizer, scheduler, epoch, path):
-        if scheduler is None:
-            torch.save({
-                "model": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "epoch": epoch,
-                "scheduler": "None"
-            }, path)
+    def save(model, path, optimizer=None, scheduler=None):
+        if optimizer is None and scheduler is None:
+            # 仅保存模型的state_dict
+            torch.save(model.state_dict(), path)
         else:
-            torch.save({
-                "model": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "epoch": epoch,
-                "scheduler": scheduler.state_dict()
-            }, path)
+            obj = {"model": model.state_dict()}
+            if optimizer is not None:
+                obj["optimizer"] = optimizer.state_dict()
+            if scheduler is not None:
+                obj["scheduler"] = scheduler.state_dict()
+            torch.save(obj, path)
 
     @staticmethod
-    def load(path, device, model, optimizer=None, scheduler=None):
+    def load(path, device, model, pure=False, optimizer=None, scheduler=None):
         ckpt = torch.load(path, map_location=device)
-        model.load_state_dict(ckpt["model"])
-        if optimizer is not None:
-            optimizer.load_state_dict(ckpt["optimizer"])
-        if scheduler is not None:
-            scheduler.load_state_dict(ckpt["scheduler"])
-        epoch = ckpt["epoch"]
+        if pure:
+            # ckpt中仅保存了模型的state_dict
+            model.load_state_dict(ckpt)
+        else:
+            model.load_state_dict(ckpt["model"])
+            if optimizer is not None:
+                optimizer.load_state_dict(ckpt["optimizer"])
+            if scheduler is not None:
+                scheduler.load_state_dict(ckpt["scheduler"])
         del ckpt
-        return model, optimizer, scheduler, epoch

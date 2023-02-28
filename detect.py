@@ -4,14 +4,12 @@ import torch
 from configs import get_cfg
 from models import SSD, CenterNet, YoloV3, Yolo7
 from predict import ssd_decode, centernet_decode, yolov3_decode, yolo7_decode
+from utils.ckpt import CheckPoint
 
 # 权重文件位置
-WEIGHTS = "saves/YoloV7_voc_epoch-85.pth"
-# ckpt有没有子级key，本项目保存的模型的state_dict()在checkpoint的"model" key下
-SUBKEY = "model"
-
+WEIGHTS = "saves/yolov7_weights.pth"
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/2007_000032.jpg"]
+IMAGE_PATHS = ["test/000000000471.jpg"]
 # 配置文件路径
 CONFIG = "configs/yolo7_cfg.py"
 
@@ -26,13 +24,7 @@ def detect_images(cfg, model_class, decode_fn, device):
     :return:
     """
     model = model_class(cfg).to(device)
-    ckpt = torch.load(WEIGHTS, map_location=device)
-    if SUBKEY == "":
-        model.load_state_dict(ckpt)
-    elif SUBKEY == "model":
-        model.load_state_dict(ckpt["model"])
-    else:
-        raise ValueError(f"Unsupported SUBKEY: {SUBKEY}")
+    CheckPoint.load(WEIGHTS, device, model, pure=True)
     print(f"Loaded weights: {WEIGHTS}")
     for img in IMAGE_PATHS:
         decode_fn(cfg, model, img, print_on=True, save_result=True, device=device)
