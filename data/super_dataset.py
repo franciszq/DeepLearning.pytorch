@@ -6,10 +6,10 @@ import cv2
 import numpy as np
 import xml.dom.minidom as xdom
 from torch.utils.data import Dataset
-import torchvision.transforms.functional as F
+import torchvision.transforms.functional as TF
 
+from configs.dataset_cfg import VOC, COCO
 from utils.image_process import read_image, cv2_paste
-from utils.yaml_tools import load_yaml
 
 
 def get_random_number(a=0.0, b=1.0):
@@ -71,7 +71,7 @@ class SuperDataset(Dataset):
             pass
 
         # 归一化、通道交换
-        image_tensor = F.to_tensor(image)
+        image_tensor = TF.to_tensor(image)
         box = np.array(box, dtype=np.float32)
         # 对真实框进行预处理
         nL = len(box)
@@ -332,13 +332,9 @@ class SuperDataset(Dataset):
         return merge_bbox
 
     @staticmethod
-    def _get_voc_root_and_classes(voc_yaml):
-        cfg_dict = load_yaml(voc_yaml)
-        return cfg_dict["root"], cfg_dict["classes"]
-
-    def _parse_voc(self):
+    def _parse_voc():
         # VOC数据集的根目录和类别名
-        voc_root, voc_class_names = self._get_voc_root_and_classes("configs/voc.yaml")
+        voc_root, voc_class_names = VOC["root"], VOC["classes"]
         images_root = os.path.join(voc_root, "JPEGImages")
         # 加载训练集
         train_txt = os.path.join(voc_root, "ImageSets", "Main", "train.txt")
