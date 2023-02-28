@@ -17,14 +17,16 @@ def get_random_number(a=0.0, b=1.0):
     return np.random.rand() * (b - a) + a
 
 
-class SuperDataset(Dataset):
-    def __init__(self, dataset_name, input_shape, mosaic, mosaic_prob):
+class DetectionDataset(Dataset):
+    def __init__(self, dataset_name, input_shape, mosaic, mosaic_prob, epoch_length, special_aug_ratio=0.7):
         """
-
         :param dataset_name: 数据集名称, 'voc' or 'coco'
         :param input_shape: 输入图片大小, [h, w]
         :param mosaic: 是否开启mosaic数据增强
         :param mosaic_prob: 使用mosaic数据增强的概率
+        :param special_aug_ratio: 参考YoloX，由于Mosaic生成的训练图片，远远脱离自然图片的真实分布。
+                                  当mosaic=True时，本代码会在special_aug_ratio范围内开启mosaic。
+                                  默认为前70%个epoch，100个世代会开启70个世代。
         """
         super().__init__()
         assert dataset_name in ['voc', 'coco'], f"Unsupported dataset: {dataset_name}"
@@ -38,6 +40,9 @@ class SuperDataset(Dataset):
 
         self.mosaic = mosaic
         self.mosaic_prob = mosaic_prob
+        self.special_aug_ratio = special_aug_ratio
+        self.epoch_length = epoch_length
+        self.epoch_now = -1
 
         if dataset_name == 'voc':
             self.root, self.class_names, self.images, self.xml_paths, self.class2index = self._parse_voc()
@@ -50,7 +55,8 @@ class SuperDataset(Dataset):
 
     def __getitem__(self, item):
         if self.dataset_name == 'voc':
-            if self.mosaic and get_random_number() < self.mosaic_prob:
+            if self.mosaic and get_random_number() < self.mosaic_prob and \
+                    self.epoch_now < self.epoch_length * self.special_aug_ratio:
                 image, box = self.mosaic_for_voc(item)
             else:
                 # 使用opencv读取图片

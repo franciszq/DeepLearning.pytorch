@@ -146,6 +146,9 @@ class BaseTrainer:
             # 重置
             for m in train_metrics:
                 m.reset()
+
+            self.train_dataloader.dataset.epoch_now = epoch
+
             with tqdm(self.train_dataloader, desc=f"Epoch-{epoch}/{self.total_epoch}") as pbar:
                 for i, (images, targets) in enumerate(pbar):
                     metrics = self.train_loop(images, targets, scaler)

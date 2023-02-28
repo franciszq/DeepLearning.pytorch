@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from data.collate import yolo7_collate
-from data.super_dataset import SuperDataset
+from data.detection_dataset import DetectionDataset
 from loss.yolo7_loss import Yolo7Loss
 from models.yolov7_model import Yolo7
 from trainer.base import BaseTrainer
@@ -26,10 +26,10 @@ class Yolo7Trainer(BaseTrainer):
         self.model.to(device=self.device)
 
     def load_data(self):
-        train_dataset = SuperDataset(dataset_name=self.dataset_name,
-                                     input_shape=self.input_image_size[1:],
-                                     mosaic=True,
-                                     mosaic_prob=0.5)
+        train_dataset = DetectionDataset(dataset_name=self.dataset_name,
+                                         input_shape=self.input_image_size[1:],
+                                         mosaic=True,
+                                         mosaic_prob=0.5)
         self.train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size,
                                            shuffle=True, num_workers=self.num_workers,
                                            drop_last=True, collate_fn=yolo7_collate)
