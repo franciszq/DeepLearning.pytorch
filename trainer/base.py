@@ -125,7 +125,7 @@ class BaseTrainer:
             except Exception:
                 traceback.print_exc()
 
-        if not self.resume_training_weights:
+        if CheckPoint.check(self.resume_training_weights):
             # 从checkpoint恢复训练
             CheckPoint.load(path=self.resume_training_weights,
                             device=self.device,

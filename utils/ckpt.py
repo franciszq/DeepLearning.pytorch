@@ -1,7 +1,20 @@
+import os
+
 import torch
 
 
 class CheckPoint:
+    @staticmethod
+    def check(path):
+        """
+        判断权重文件是否存在
+        :param path:
+        :return:
+        """
+        if path is None:
+            return False
+        return os.path.exists(path)
+
     @staticmethod
     def save(model, path, optimizer=None, scheduler=None):
         if optimizer is None and scheduler is None:

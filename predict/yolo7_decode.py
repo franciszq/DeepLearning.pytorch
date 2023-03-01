@@ -1,7 +1,7 @@
 import torch
 
 from utils.anchor import get_yolo7_anchors
-from utils.image_process import read_image_and_convert_to_tensor, read_image
+from utils.image_process import read_image_and_convert_to_tensor
 from utils.nms import yolo7_nms
 from configs.yolo7_cfg import Config
 from utils.visualize import show_detection_results
@@ -9,10 +9,8 @@ from utils.visualize import show_detection_results
 
 def detect_one_image(cfg: Config, model, image_path, print_on, save_result, device):
     model.eval()
-    # 获取这张图片的大小
-    h, w, _ = read_image(image_path).shape
     # 处理单张图片
-    image = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:], letterbox=False)
+    image, h, w = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:], letterbox=False)
     image = image.to(device)
     # 生成anchors
     anchors = get_yolo7_anchors(cfg)

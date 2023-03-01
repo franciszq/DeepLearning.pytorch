@@ -13,7 +13,7 @@ class Config:
     class _Arch:
         def __init__(self):
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = COCO["num_classes"]
+            self.num_classes = VOC["num_classes"]
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 640, 640)
             self.anchors = [
@@ -27,14 +27,14 @@ class Config:
         # 数据集
         def __init__(self):
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = COCO["name"]
+            self.dataset_name = VOC["name"]
 
     class _Train:
         # 训练参数
         def __init__(self):
-            # 恢复训练时加载的checkpoint文件，""表示从epoch=0开始训练
+            # 恢复训练时加载的checkpoint文件，None表示从epoch=0开始训练
             # 测试时也需要在这里指定checkpoint文件
-            self.resume_training = ""
+            self.resume_training = None
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
@@ -42,13 +42,15 @@ class Config:
             self.batch_size = 4
             # 初始学习率
             self.initial_lr = 1e-3
-            # warm up轮数
+            # warm up轮数，设为0表示不使用warm up
             self.warmup_epochs = 0
-            self.milestones = [52]
+            self.milestones = [30, 60]
             self.gamma = 0.1
 
             # 是否使用预训练权重
-            self.pretrained = False
+            self.pretrained = True
+            # 预训练模型的权重路径
+            self.pretrained_weights = "saves/yolov7_weights.pth"
             # 模型保存间隔
             self.save_interval = 5
             # 每隔多少epoch在验证集上验证一次

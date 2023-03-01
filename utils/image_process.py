@@ -33,15 +33,16 @@ def read_image_and_convert_to_tensor(image_path, size, mode='rgb', letterbox=Tru
     :param size: [h, w]
     :param mode: 格式，'rgb', 'bgr', 'gray'
     :param letterbox: 是否使用保持宽高比的resize方式
-    :return: torch.Tensor, shape=(1, c, h, w)
+    :return: [torch.Tensor, shape=(1, c, h, w)], h, w
     """
     image_array = read_image(image_path, mode)
+    h, w, _ = image_array.shape
     if letterbox:
         image_array, _, _ = letter_box(image_array, size)
     else:
         image_array = cv2.resize(src=image_array, dsize=size[::-1], interpolation=cv2.INTER_CUBIC)
     image = TF.to_tensor(image_array).unsqueeze(0)
-    return image
+    return image, h, w
 
 
 def letter_box(image, size):
