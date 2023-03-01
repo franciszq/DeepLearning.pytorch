@@ -18,15 +18,17 @@ def get_random_number(a=0.0, b=1.0):
 
 
 class DetectionDataset(Dataset):
-    def __init__(self, dataset_name, input_shape, mosaic, mosaic_prob, epoch_length, special_aug_ratio=0.7):
+    def __init__(self, dataset_name, input_shape, mosaic, mosaic_prob, epoch_length, special_aug_ratio=0.7, train=True):
         """
         :param dataset_name: 数据集名称, 'voc' or 'coco'
         :param input_shape: 输入图片大小, [h, w]
         :param mosaic: 是否开启mosaic数据增强
         :param mosaic_prob: 使用mosaic数据增强的概率
+        :param epoch_length: 模型训练的epoch总数
         :param special_aug_ratio: 参考YoloX，由于Mosaic生成的训练图片，远远脱离自然图片的真实分布。
                                   当mosaic=True时，本代码会在special_aug_ratio范围内开启mosaic。
                                   默认为前70%个epoch，100个世代会开启70个世代。
+        :param train: True表示训练集，False表示验证集
         """
         super().__init__()
         assert dataset_name in ['voc', 'coco'], f"Unsupported dataset: {dataset_name}"
@@ -43,9 +45,10 @@ class DetectionDataset(Dataset):
         self.special_aug_ratio = special_aug_ratio
         self.epoch_length = epoch_length
         self.epoch_now = -1
+        self.train = train
 
         if dataset_name == 'voc':
-            self.root, self.class_names, self.images, self.xml_paths, self.class2index = self._parse_voc()
+            self.root, self.class_names, self.images, self.xml_paths, self.class2index = self._parse_voc(train)
         else:
             # TODO COCO数据集解析
             pass
@@ -68,7 +71,7 @@ class DetectionDataset(Dataset):
                 box = np.array(box, dtype=np.float32)
                 box = np.reshape(box, (-1, 5))  # shape: (N, 5)  N是这张图片包含的目标数
 
-                image, box = self.get_random_data(image, box)
+                image, box = self.get_random_data(image, box, random=self.train)
 
 
 
@@ -108,10 +111,41 @@ class DetectionDataset(Dataset):
         # labels_out: numpy.ndarray [nL, 6(默认0, id, cx, cy, w, h)]
         return image_tensor, labels_out
 
-    def get_random_data(self, image, box):
+    def get_random_data(self, image, box, random=True):
         # 图像的高宽与目标高宽
         ih, iw, _ = image.shape
         h, w = self.input_shape
+
+        if not random:
+            scale = min(w / iw, h / ih)
+            nw = int(iw * scale)
+            nh = int(ih * scale)
+            dx = (w - nw) // 2
+            dy = (h - nh) // 2
+
+            # ---------------------------------#
+            #   将图像多余的部分加上灰条
+            # ---------------------------------#
+            image = cv2.resize(src=image, dsize=(nw, nh), interpolation=cv2.INTER_CUBIC)
+            new_image = np.full(shape=[h, w, 3], fill_value=128, dtype=np.uint8)
+            new_image = cv2_paste(new_image, image, dx, dy)
+            image_data = np.array(new_image, np.float32)
+
+            # ---------------------------------#
+            #   对真实框进行调整
+            # ---------------------------------#
+            if len(box) > 0:
+                np.random.shuffle(box)
+                box[:, [0, 2]] = box[:, [0, 2]] * nw / iw + dx
+                box[:, [1, 3]] = box[:, [1, 3]] * nh / ih + dy
+                box[:, 0:2][box[:, 0:2] < 0] = 0
+                box[:, 2][box[:, 2] > w] = w
+                box[:, 3][box[:, 3] > h] = h
+                box_w = box[:, 2] - box[:, 0]
+                box_h = box[:, 3] - box[:, 1]
+                box = box[np.logical_and(box_w > 1, box_h > 1)]  # discard invalid box
+
+            return image_data, box
 
         # 对图像进行缩放并且扭曲长和宽
         new_ar = iw / ih * get_random_number(1 - self.jitter, 1 + self.jitter) / \
@@ -338,14 +372,21 @@ class DetectionDataset(Dataset):
         return merge_bbox
 
     @staticmethod
-    def _parse_voc():
+    def _parse_voc(train=True):
         # VOC数据集的根目录和类别名
         voc_root, voc_class_names = VOC["root"], VOC["classes"]
         images_root = os.path.join(voc_root, "JPEGImages")
-        # 加载训练集
-        train_txt = os.path.join(voc_root, "ImageSets", "Main", "train.txt")
-        with open(train_txt, mode="r", encoding="utf-8") as f:
-            image_names = f.read().strip().split('\n')
+        if train:
+            # 加载训练集
+            train_txt = os.path.join(voc_root, "ImageSets", "Main", "train.txt")
+            with open(train_txt, mode="r", encoding="utf-8") as f:
+                image_names = f.read().strip().split('\n')
+        else:
+            # 加载验证集
+            val_txt = os.path.join(voc_root, "ImageSets", "Main", "val.txt")
+            with open(val_txt, mode="r", encoding="utf-8") as f:
+                image_names = f.read().strip().split('\n')
+
         # 所有图片路径的列表
         image_paths = [os.path.join(images_root, f"{e}.jpg") for e in image_names]
         # 所有xml文件路径的列表

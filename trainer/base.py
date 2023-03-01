@@ -2,7 +2,7 @@ import os
 import traceback
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -69,6 +69,8 @@ class BaseTrainer:
 
         # 训练集
         self.train_dataloader = None
+        # 验证集
+        self.val_dataloader = None
         # 模型
         self.model = None
         # 模型名称
@@ -175,6 +177,10 @@ class BaseTrainer:
 
             self.lr_scheduler.step()
 
+            if epoch % self.eval_interval == 0:
+                evaluation = self.evaluate_loop()
+                print([f"{k}={v:.5f}" for k, v in evaluation.items()])
+
             if epoch % self.save_interval == 0:
                 CheckPoint.save(model=self.model, path=Path(self.save_path).joinpath(
                     f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"),
@@ -185,6 +191,10 @@ class BaseTrainer:
         # 保存最终模型
         CheckPoint.save(model=self.model,
                         path=Path(self.save_path).joinpath(f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))
+
+
+    def evaluate_loop(self) -> Dict:
+        return {}
 
 
 class Pipeline(metaclass=ABCMeta):

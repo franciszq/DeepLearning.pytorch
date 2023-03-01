@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Dict
 
 import torch
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from data.collate import yolo7_collate
 from data.detection_dataset import DetectionDataset
@@ -30,10 +31,22 @@ class Yolo7Trainer(BaseTrainer):
                                          input_shape=self.input_image_size[1:],
                                          mosaic=True,
                                          mosaic_prob=0.5,
-                                         epoch_length=self.total_epoch)
+                                         epoch_length=self.total_epoch,
+                                         special_aug_ratio=0.7,
+                                         train=True)
+        val_dataset = DetectionDataset(dataset_name=self.dataset_name,
+                                       input_shape=self.input_image_size[1:],
+                                       mosaic=False,
+                                       mosaic_prob=0,
+                                       epoch_length=self.total_epoch,
+                                       special_aug_ratio=0,
+                                       train=False)
         self.train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size,
                                            shuffle=True, num_workers=self.num_workers,
                                            drop_last=True, collate_fn=yolo7_collate)
+        self.val_dataloader = DataLoader(val_dataset, batch_size=self.batch_size,
+                                         shuffle=True, num_workers=self.num_workers,
+                                         drop_last=True, collate_fn=yolo7_collate)
 
     def set_optimizer(self):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
@@ -74,3 +87,21 @@ class Yolo7Trainer(BaseTrainer):
             self.optimizer.step()
 
         return [loss]
+
+    def evaluate_loop(self) -> Dict:
+        self.model.eval()
+        val_loss = 0
+        num_batches = len(self.val_dataloader)
+
+        with tqdm(self.val_dataloader, desc="Evaluate") as pbar:
+            with torch.no_grad():
+                for i, (images, targets) in enumerate(pbar):
+                    images = images.to(device=self.device)
+                    targets = targets.to(device=self.device)
+                    preds = self.model(images)
+                    loss_value = self.criterion(preds, targets, images)
+
+                    val_loss += loss_value.item()
+
+        val_loss /= num_batches
+        return {'val_loss': val_loss}
