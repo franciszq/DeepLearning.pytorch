@@ -435,7 +435,7 @@ class Yolo7(nn.Module):
         self.yolo_head_P5 = nn.Conv2d(transition_channels * 32, len(anchors_mask[0]) * (5 + num_classes), 1)
 
         if pretrained:
-            self._load_pretrained(pretrained_weights)
+            CheckPoint.load_pretrained(self, pretrained_weights)
 
     def fuse(self):
         print('Fusing layers... ')
@@ -447,24 +447,6 @@ class Yolo7(nn.Module):
                 delattr(m, 'bn')
                 m.forward = m.fuseforward
         return self
-
-    def _load_pretrained(self, weights):
-        assert CheckPoint.check(weights), f"The pretrained model weights {weights} does not exist."
-        self.model_dict = self.state_dict()
-        print(f"Loading pretrained model state dict from {weights}...")
-        pretrained_dict = torch.load(weights)
-        load_key, no_load_key, temp_dict = [], [], {}
-        for k, v in pretrained_dict.items():
-            if k in self.model_dict.keys() and np.shape(self.model_dict[k]) == np.shape(v):
-                temp_dict[k] = v
-                load_key.append(k)
-            else:
-                no_load_key.append(k)
-        self.model_dict.update(temp_dict)
-        self.load_state_dict(self.model_dict)
-        # 显示匹配上和没有匹配上的key
-        print(f"Successfully loaded {len(load_key)} keys, they are: {load_key[:20]}...")
-        print(f"Failed to load {len(no_load_key)} keys, they are: {no_load_key[:20]}...")
 
     def forward(self, x):
         #  backbone

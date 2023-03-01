@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 
 
@@ -14,6 +15,25 @@ class CheckPoint:
         if path is None:
             return False
         return os.path.exists(path)
+
+    @staticmethod
+    def load_pretrained(model, weights):
+        assert CheckPoint.check(weights), f"The pretrained model weights {weights} does not exist."
+        model_dict = model.state_dict()
+        print(f"Loading pretrained model state dict from {weights}...")
+        pretrained_dict = torch.load(weights)
+        load_key, no_load_key, temp_dict = [], [], {}
+        for k, v in pretrained_dict.items():
+            if k in model_dict.keys() and np.shape(model_dict[k]) == np.shape(v):
+                temp_dict[k] = v
+                load_key.append(k)
+            else:
+                no_load_key.append(k)
+        model_dict.update(temp_dict)
+        model.load_state_dict(model_dict)
+        # 显示匹配上和没有匹配上的key
+        print(f"Successfully loaded {len(load_key)} keys, they are: {load_key[:20]}...")
+        print(f"Failed to load {len(no_load_key)} keys, they are: {no_load_key[:20]}...")
 
     @staticmethod
     def save(model, path, optimizer=None, scheduler=None):
