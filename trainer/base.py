@@ -136,9 +136,10 @@ class BaseTrainer:
             print(
                 f"After loading weights from {self.resume_training_weights}, it will resume training from epoch-{self.last_epoch}.")
 
-        scaler = None
         if self.mixed_precision:
             scaler = torch.cuda.amp.GradScaler()
+        else:
+            scaler = None
 
         for epoch in range(self.last_epoch + 1, self.total_epoch):
             # 切换为训练模式

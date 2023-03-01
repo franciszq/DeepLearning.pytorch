@@ -9,7 +9,7 @@ from mAP.eval import evaluate_pipeline
 from models.yolov3_model import YoloV3
 from predict.yolov3_decode import Decoder
 from trainer.base import BaseTrainer
-from trainer.lr_scheduler import get_optimizer, get_lr_scheduler
+from trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 
 
 class Yolo3Trainer(BaseTrainer):
@@ -35,9 +35,12 @@ class Yolo3Trainer(BaseTrainer):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
 
     def set_lr_scheduler(self):
-        self.lr_scheduler = get_lr_scheduler("multi_step", self.optimizer, self.last_epoch,
-                                             milestones=self.milestones,
-                                             gamma=self.gamma)
+        self.lr_scheduler = warm_up_scheduler(optimizer=self.optimizer,
+                                              warmup_epochs=self.warmup_epochs,
+                                              multi_step=True,
+                                              milestones=self.milestones,
+                                              gamma=self.gamma,
+                                              last_epoch=self.last_epoch)
 
     def set_criterion(self):
         self.criterion = YoloLoss(self.cfg, self.device)

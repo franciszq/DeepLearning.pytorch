@@ -9,7 +9,7 @@ from loss.yolo7_loss import Yolo7Loss
 from models.yolov7_model import Yolo7
 from trainer.base import BaseTrainer
 from utils.anchor import get_yolo7_anchors
-from trainer.lr_scheduler import get_optimizer, get_lr_scheduler
+from trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 
 
 class Yolo7Trainer(BaseTrainer):
@@ -29,7 +29,8 @@ class Yolo7Trainer(BaseTrainer):
         train_dataset = DetectionDataset(dataset_name=self.dataset_name,
                                          input_shape=self.input_image_size[1:],
                                          mosaic=True,
-                                         mosaic_prob=0.5)
+                                         mosaic_prob=0.5,
+                                         epoch_length=self.total_epoch)
         self.train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size,
                                            shuffle=True, num_workers=self.num_workers,
                                            drop_last=True, collate_fn=yolo7_collate)
@@ -38,10 +39,12 @@ class Yolo7Trainer(BaseTrainer):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
 
     def set_lr_scheduler(self):
-        self.lr_scheduler = get_lr_scheduler(self.cfg.optimizer.scheduler_name,
-                                             self.optimizer, self.last_epoch,
-                                             milestones=self.milestones,
-                                             gamma=self.gamma)
+        self.lr_scheduler = warm_up_scheduler(optimizer=self.optimizer,
+                                              warmup_epochs=self.warmup_epochs,
+                                              multi_step=True,
+                                              milestones=self.milestones,
+                                              gamma=self.gamma,
+                                              last_epoch=self.last_epoch)
 
 
     def set_criterion(self):
