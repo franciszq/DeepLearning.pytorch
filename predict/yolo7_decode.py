@@ -7,7 +7,7 @@ from configs.yolo7_cfg import Config
 from utils.visualize import show_detection_results
 
 
-def detect_one_image(cfg: Config, model, image_path, print_on, save_result, device):
+def yolo7_predictor(cfg: Config, model, image_path, print_on, save_result, device):
     model.eval()
     # 处理单张图片
     image, h, w = read_image_and_convert_to_tensor(image_path, size=cfg.arch.input_size[1:], letterbox=False)

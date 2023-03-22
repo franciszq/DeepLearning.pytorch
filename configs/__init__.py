@@ -2,6 +2,14 @@ import os
 from . import ssd_cfg, centernet_cfg, yolov3_cfg, yolo7_cfg
 
 
+CFGS = {
+    "ssd_cfg.py": ssd_cfg.Config(),
+    "centernet_cfg.py": centernet_cfg.Config(),
+    "yolov3_cfg.py": yolov3_cfg.Config(),
+    "yolo7_cfg.py": yolo7_cfg.Config(),
+}
+
+
 def split_filename(filename):
     """
     从文件名中分离出模型名
@@ -15,13 +23,7 @@ def split_filename(filename):
 
 def get_cfg(filepath):
     filename = os.path.basename(filepath)
-    if filename == "ssd_cfg.py":
-        return ssd_cfg.Config(), split_filename(filename)
-    elif filename == "centernet_cfg.py":
-        return centernet_cfg.Config(), split_filename(filename)
-    elif filename == "yolov3_cfg.py":
-        return yolov3_cfg.Config(), split_filename(filename)
-    elif filename == "yolo7_cfg.py":
-        return yolo7_cfg.Config(), split_filename(filename)
-    else:
+    try: 
+        return CFGS[filename], split_filename(filename)
+    except KeyError:
         raise ValueError(f"Could not find {filepath}. Perhaps the corresponding module is not registered.")

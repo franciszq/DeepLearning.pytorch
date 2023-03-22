@@ -4,12 +4,13 @@ import torch
 from configs import get_cfg
 from models import SSD, CenterNet, YoloV3, Yolo7
 from predict import ssd_decode, centernet_decode, yolov3_decode, yolo7_decode
+from registry import register_model
 from utils.ckpt import CheckPoint
 
 # 权重文件位置
 WEIGHTS = "saves/yolov7_weights.pth"
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/000000000471.jpg"]
+IMAGE_PATHS = ["test/2007_002273.jpg"]
 # 配置文件路径
 CONFIG = "configs/yolo7_cfg.py"
 
@@ -32,17 +33,17 @@ def detect_images(cfg, model_class, decode_fn, device):
 
 def main():
     t0 = time.time()
-    cfg, model_name = get_cfg(CONFIG)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    cfg, model_name = get_cfg(CONFIG)
+    model_registry = register_model()
 
-    if model_name == "ssd":
-        detect_images(cfg, SSD, ssd_decode.detect_one_image, device)
-    elif model_name == "centernet":
-        detect_images(cfg, CenterNet, centernet_decode.detect_one_image, device)
-    elif model_name == "yolov3":
-        detect_images(cfg, YoloV3, yolov3_decode.detect_one_image, device)
-    elif model_name == "yolo7":
-        detect_images(cfg, Yolo7, yolo7_decode.detect_one_image, device)
+    try:
+        class_param = model_registry[model_name].model_class
+        decode_fn_param = model_registry[model_name].model_predictor
+    except KeyError:
+        raise ValueError(f"Unsupported model: {model_name}")
+    
+    detect_images(cfg, class_param, decode_fn_param, device)
 
     print(f"Total time: {(time.time() - t0):.2f}s")
 
