@@ -46,16 +46,16 @@ pip install -r requirements.txt
                 |-- SegmentationClass
                 `-- SegmentationObject
 ```
-最后，修改`coco.yaml`和`voc.yaml`文件中参数`root`的值，分别为`${COCO_ROOT}/coco`和`${VOC_ROOT}/VOCdevkit/VOC2012/`
+最后，修改`configs/dataset_cfg.py`文件中`VOC_CFG`和`COCO_CFG`中的`root`的值，分别为`${VOC_ROOT}/VOCdevkit/VOC2012/`和`${COCO_ROOT}/coco`
 
 ## 使用方法
 ### 训练
 修改`train.py`中的配置参数，将`MODE`改为0，然后运行`train.py`。
 
 ### 验证模型的性能
-修改`train.py`中的配置参数，将`MODE`改为1，然后运行`train.py`。
+修改`evaluate.py`中的配置参数，验证模型在VOC或COCO数据集上的表现。
 
-### 在图片上测试
+### 在图片（或视频）上测试
 修改`detect.py`中的配置参数，然后运行`detect.py`。
 
 ## 参考
