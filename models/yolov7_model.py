@@ -357,7 +357,7 @@ class Yolo7(nn.Module):
     def __init__(self, cfg: Config):
         super().__init__()
         anchors_mask = cfg.arch.anchors_mask
-        num_classes = cfg.arch.num_classes
+        num_classes = cfg.dataset.num_classes
         phi = cfg.arch.phi
         pretrained = cfg.train.pretrained
         pretrained_weights = cfg.train.pretrained_weights
@@ -512,5 +512,5 @@ class Yolo7(nn.Module):
 
         return out0, out1, out2
 
-    def get_model_name(self):
-        return "YoloV7"
+    # def get_model_name(self):
+    #     return "YoloV7"

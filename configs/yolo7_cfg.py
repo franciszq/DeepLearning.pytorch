@@ -13,12 +13,13 @@ class Config:
     class _Arch:
         def __init__(self):
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = COCO["num_classes"]
+            # self.num_classes = COCO["num_classes"]
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 640, 640)
             self.anchors = [
                 12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401
             ]
+            # anchor的编号
             self.anchors_mask = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
             # 用到的yolov7的版本，l: yolov7, x: yolov7_x
             self.phi = 'l'
@@ -28,6 +29,8 @@ class Config:
         def __init__(self):
             # 数据集名称，"voc"或者"coco"
             self.dataset_name = COCO["name"]
+            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
+            self.num_classes = COCO["num_classes"]
 
     class _Train:
         # 训练参数
@@ -89,5 +92,7 @@ class Config:
     class _Decode:
         def __init__(self):
             self.test_results = "result"
+            # 是否使用letterbox的方式对图片进行预处理
+            self.letterbox_image = True
             self.conf_threshold = 0.5
             self.nms_threshold = 0.3

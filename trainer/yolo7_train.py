@@ -3,11 +3,12 @@ from typing import List, Dict
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from algorithms.yolo_v7 import YOLOv7
 
 from data.collate import yolo7_collate
 from data.detection_dataset import DetectionDataset
 from loss.yolo7_loss import Yolo7Loss
-from models.yolov7_model import Yolo7
+# from models.yolov7_model import Yolo7
 from trainer.base import BaseTrainer
 from utils.anchor import get_yolo7_anchors
 from trainer.lr_scheduler import get_optimizer, warm_up_scheduler
@@ -16,15 +17,16 @@ from trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 class Yolo7Trainer(BaseTrainer):
     def __init__(self, cfg, device):
         super().__init__(cfg, device)
+        self.yolo_v7 = YOLOv7(cfg)
         # 损失函数的返回值要与这里的metrics_name一一对应
         self.metric_names = ["loss"]
         # 是否在tqdm进度条中显示上述metrics
         self.show_option = [True]
-        self.overwrite_model_name()
 
     def initialize_model(self):
-        self.model = Yolo7(self.cfg)
+        self.model, model_name = self.yolo_v7.build_model()
         self.model.to(device=self.device)
+        self.set_model_name(model_name)
 
     def load_data(self):
         train_dataset = DetectionDataset(dataset_name=self.dataset_name,
@@ -61,11 +63,7 @@ class Yolo7Trainer(BaseTrainer):
 
 
     def set_criterion(self):
-        self.criterion = Yolo7Loss(anchors=get_yolo7_anchors(self.cfg),
-                                   num_classes=self.num_classes,
-                                   input_shape=self.input_image_size[1:],
-                                   anchors_mask=self.cfg.arch.anchors_mask,
-                                   label_smoothing=self.cfg.loss.label_smoothing)
+        self.criterion = self.yolo_v7.build_loss()
 
 
     def train_loop(self, images, targets, scaler) -> List:

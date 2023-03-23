@@ -107,11 +107,8 @@ class BaseTrainer:
     def set_criterion(self):
         pass
 
-    def overwrite_model_name(self, model_name=None):
-        try:
-            self.model_name = self.model.get_model_name()
-        except Exception:
-            self.model_name = model_name
+    def set_model_name(self, model_name):
+        self.model_name = model_name
 
     def train_loop(self, images, targets, scaler) -> List:
         return []

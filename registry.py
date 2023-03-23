@@ -1,17 +1,10 @@
-from models.yolov7_model import Yolo7
-from trainer.yolo7_train import Yolo7Trainer
-from predict.yolo7_decode import yolo7_predictor
+from algorithms.yolo_v7 import YOLOv7
+from configs import yolo7_cfg
 
 
-class ModelRegistry:
-    def __init__(self, model_class, model_trainer, model_predictor):
-        self.model_class = model_class
-        self.model_trainer = model_trainer
-        self.model_predictor = model_predictor
-
-
-def register_model():
-    model_registry = {}
-    # 注册yolo7模型
-    model_registry.update({"yolo7": ModelRegistry(Yolo7, Yolo7Trainer, yolo7_predictor)})
-    return model_registry
+# 模型注册表
+# key：配置文件
+# value：配置文件对应的配置类，模型类
+model_registry = {
+    "yolo7_cfg.py": [yolo7_cfg.Config(), YOLOv7],
+}
