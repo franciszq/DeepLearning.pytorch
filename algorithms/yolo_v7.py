@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import torch
 from configs.yolo7_cfg import Config
@@ -61,20 +62,20 @@ class YOLOv7:
 
         if results[0] is None:
             print(f"No object detected")
-            return
+            return cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
 
         boxes = torch.from_numpy(results[0][:, :4])
         scores = torch.from_numpy(results[0][:, 4] * results[0][:, 5])
         classes = torch.from_numpy(results[0][:, 6]).to(torch.int32)
 
-        show_detection_results(image_path=image_path,
-                               dataset_name=self.cfg.dataset.dataset_name,
-                               boxes=boxes,
-                               scores=scores,
-                               class_indices=classes,
-                               print_on=print_on,
-                               save_result=save_result,
-                               save_dir=self.cfg.decode.test_results)
+        return show_detection_results(image_path=image_path,
+                                      dataset_name=self.cfg.dataset.dataset_name,
+                                      boxes=boxes,
+                                      scores=scores,
+                                      class_indices=classes,
+                                      print_on=print_on,
+                                      save_result=save_result,
+                                      save_dir=self.cfg.decode.test_results)
 
     def decode_box(self, preds, image_h, image_w):
         """

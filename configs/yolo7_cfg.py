@@ -1,5 +1,6 @@
 from .dataset_cfg import VOC, COCO
 
+
 class Config:
     def __init__(self):
         self.arch = self._Arch()

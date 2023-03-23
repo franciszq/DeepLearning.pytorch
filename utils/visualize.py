@@ -38,10 +38,12 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
     n = boxes.size(0)
     if n == 0:
         # 没有检测到目标
-        print("Detect 0 object")
+        if print_on:
+            print("Detect 0 object")
         image_with_boxes = ori_image
     else:
-        print(f"Detect {n} objects: ")
+        if print_on:
+            print(f"Detect {n} objects: ")
         boxes = boxes.cpu().numpy()
         scores = scores.cpu().numpy()
         class_indices = class_indices.cpu().numpy().tolist()
@@ -175,7 +177,6 @@ class Draw:
 
         num_boxes = boxes.shape[0]
         for i in range(num_boxes):
-            print(class_ids)
             cls_id = class_ids[i]
             score = scores[i]
             x0 = boxes[i, 0]
