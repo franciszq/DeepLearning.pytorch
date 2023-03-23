@@ -1,7 +1,8 @@
-import torch
-from registry import register_model
+import os
 
-from configs import get_cfg
+import torch
+from registry import model_registry
+
 
 # 配置文件路径
 CONFIG = "configs/yolo7_cfg.py"
@@ -10,17 +11,14 @@ MODE = 0
 
 
 def main():
-    cfg, model_name = get_cfg(CONFIG)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    model_registry = register_model()
-
+    cfg = os.path.basename(CONFIG)
     try:
-        trainer = model_registry[model_name].model_trainer
+        model_cfg, model_class, trainer = model_registry[cfg]
     except KeyError:
-        raise ValueError(f"Unsupported model: {model_name}")
+        raise ValueError(f"找不到配置文件：{cfg}.")
 
-    m = trainer(cfg, device)
+    m = trainer(model_cfg, device)
 
     if MODE == 0:
         # 训练模式

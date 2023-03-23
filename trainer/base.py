@@ -40,7 +40,7 @@ class BaseTrainer:
         # 数据集名称
         self.dataset_name = cfg.dataset.dataset_name
         # 数据集中的目标类别数，对于voc，这个值是20，对于coco，它是80
-        self.num_classes = cfg.arch.num_classes
+        self.num_classes = cfg.dataset.num_classes
         # 模型输入图片大小 (C, H, W)
         self.input_image_size = cfg.arch.input_size
         self.batch_size = cfg.train.batch_size
@@ -82,15 +82,20 @@ class BaseTrainer:
         self.lr_scheduler = None
         # 损失函数
         self.criterion = None
+        self.model_algorithm = None
 
         self.metric_names = []
         self.show_option = []
 
+        self.set_model_algorithm()
         self.load_data()
         self.initialize_model()
         self.set_optimizer()
         self.set_lr_scheduler()
         self.set_criterion()
+
+    def set_model_algorithm(self):
+        return None
 
     def initialize_model(self):
         pass
@@ -106,9 +111,6 @@ class BaseTrainer:
 
     def set_criterion(self):
         pass
-
-    def set_model_name(self, model_name):
-        self.model_name = model_name
 
     def train_loop(self, images, targets, scaler) -> List:
         return []

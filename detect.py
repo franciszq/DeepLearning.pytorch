@@ -4,7 +4,6 @@ import time
 
 import cv2
 import torch
-from tqdm import tqdm
 
 from registry import model_registry
 from utils.ckpt import CheckPoint
@@ -42,12 +41,12 @@ def detect_video(model, src_video_path, dst_video_path, decode_fn, temp_frames='
     while True:
         ret, frame = video_capture.read()
         if ret:
-            t0 = time.time()
+            t1 = time.time()
             cv2.imwrite(os.path.join(temp_frames, f"frame_temp.jpg"), frame)
             frame_dir = os.path.join(temp_frames, f"frame_temp.jpg")
             new_frame = decode_fn(model, frame_dir, print_on=False, save_result=False)
-            t1 = time.time()
-            fps = (1 / (t1 - t0) + fps) / 2
+            t2 = time.time()
+            fps = (1 / (t2 - t1) + fps) / 2
             # 加上帧率显示
             new_frame = cv2.putText(new_frame, f"fps= {fps:.2f}", (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             # 让显示窗口可以调整大小
@@ -69,7 +68,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cfg = os.path.basename(CONFIG)
     try:
-        model_cfg, model_class = model_registry[cfg]
+        model_cfg, model_class, _ = model_registry[cfg]
     except KeyError:
         raise ValueError(f"找不到配置文件：{cfg}.")
 

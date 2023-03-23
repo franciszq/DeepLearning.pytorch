@@ -17,16 +17,19 @@ from trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 class Yolo7Trainer(BaseTrainer):
     def __init__(self, cfg, device):
         super().__init__(cfg, device)
-        self.yolo_v7 = YOLOv7(cfg)
+        self.cfg = cfg
+        self.device = device
         # 损失函数的返回值要与这里的metrics_name一一对应
         self.metric_names = ["loss"]
         # 是否在tqdm进度条中显示上述metrics
         self.show_option = [True]
 
+    def set_model_algorithm(self):
+        self.model_algorithm = YOLOv7(self.cfg, self.device)
+
     def initialize_model(self):
-        self.model, model_name = self.yolo_v7.build_model()
+        self.model, self.model_name = self.model_algorithm.build_model()
         self.model.to(device=self.device)
-        self.set_model_name(model_name)
 
     def load_data(self):
         train_dataset = DetectionDataset(dataset_name=self.dataset_name,
@@ -63,7 +66,7 @@ class Yolo7Trainer(BaseTrainer):
 
 
     def set_criterion(self):
-        self.criterion = self.yolo_v7.build_loss()
+        self.criterion = self.model_algorithm.build_loss()
 
 
     def train_loop(self, images, targets, scaler) -> List:
