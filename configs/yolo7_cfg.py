@@ -1,4 +1,4 @@
-from .dataset_cfg import VOC, COCO
+from .dataset_cfg import VOC_CFG, COCO_CFG
 
 
 class Config:
@@ -29,9 +29,9 @@ class Config:
         # 数据集
         def __init__(self):
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = VOC["name"]
+            self.dataset_name = COCO_CFG["name"]
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = VOC["num_classes"]
+            self.num_classes = COCO_CFG["num_classes"]
 
     class _Train:
         # 训练参数

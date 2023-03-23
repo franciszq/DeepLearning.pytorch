@@ -5,7 +5,7 @@ import cv2
 
 import yaml
 from torch.utils.data import Dataset
-from xtcocotools.coco import COCO
+from pycocotools.coco import COCO
 
 
 class Coco(Dataset):

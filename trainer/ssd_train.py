@@ -9,7 +9,7 @@ from tqdm import tqdm
 from configs.ssd_cfg import Config
 from data.ssd_dataloader import SSDLoaderV2
 from loss.multi_box_loss import MultiBoxLossV2
-from mAP.eval import evaluate_pipeline
+from metrics.eval import evaluate_pipeline
 from models.ssd_model import SSD
 from predict.ssd_decode import DecoderV2
 from trainer.base import Pipeline, MeanMetric

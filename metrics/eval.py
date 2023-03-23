@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from tqdm import tqdm
 
 from data.voc import get_voc_root_and_classes
-from mAP.map_tools import get_map, get_coco_map
+from metrics.mAP import get_map, get_coco_map
 from utils.image_process import read_image, letter_box, reverse_letter_box
 import torchvision.transforms.functional as TF
 
@@ -126,8 +126,8 @@ def evaluate_pipeline(model,
                     else:
                         gt_f.write(f"{obj_name} {left} {top} {right} {bottom}\n")
 
-    print("Calculating mAP")
+    print("Calculating metrics")
     # 第一个参数表示预测框与真实框的重合程度
     get_map(0.5, draw_plot=True, score_threshold=0.5, path=map_out_root)
-    print("Calculating coco mAP")
+    print("Calculating coco metrics")
     get_coco_map(class_names=voc_class_names, path=map_out_root)

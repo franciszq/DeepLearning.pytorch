@@ -1,4 +1,4 @@
-VOC = {
+VOC_CFG = {
     "root": "../ZONE_FOR_DATA/VOCdevkit/VOC2012/",
     "name": "voc",
     "num_classes": 20,
@@ -26,7 +26,7 @@ VOC = {
     ]
 }
 
-COCO = {
+COCO_CFG = {
     "root": "../ZONE_FOR_DATA/coco",
     "name": "coco",
     "num_classes": 80,

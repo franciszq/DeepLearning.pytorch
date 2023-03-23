@@ -8,7 +8,7 @@ import xml.dom.minidom as xdom
 from torch.utils.data import Dataset
 import torchvision.transforms.functional as TF
 
-from configs.dataset_cfg import VOC, COCO
+from configs.dataset_cfg import VOC_CFG, COCO_CFG
 from utils.image_process import read_image, cv2_paste
 
 
@@ -374,7 +374,7 @@ class DetectionDataset(Dataset):
     @staticmethod
     def _parse_voc(train=True):
         # VOC数据集的根目录和类别名
-        voc_root, voc_class_names = VOC["root"], VOC["classes"]
+        voc_root, voc_class_names = VOC_CFG["root"], VOC_CFG["classes"]
         images_root = os.path.join(voc_root, "JPEGImages")
         if train:
             # 加载训练集

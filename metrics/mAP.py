@@ -688,9 +688,9 @@ def get_map(MINOVERLAP, draw_plot, score_threshold=0.5, path='./map_out'):
         if n_classes == 0:
             print("No class detected")
             return 0
-        results_file.write("\n# mAP of all classes\n")
+        results_file.write("\n# metrics of all classes\n")
         mAP = sum_AP / n_classes
-        text = "mAP = {0:.2f}%".format(mAP * 100)
+        text = "metrics = {0:.2f}%".format(mAP * 100)
         results_file.write(text + "\n")
         print(text)
 
@@ -811,13 +811,13 @@ def get_map(MINOVERLAP, draw_plot, score_threshold=0.5, path='./map_out'):
         )
 
     """
-    Draw mAP plot (Show AP's of all classes in decreasing order)
+    Draw metrics plot (Show AP's of all classes in decreasing order)
     """
     if draw_plot:
-        window_title = "mAP"
-        plot_title = "mAP = {0:.2f}%".format(mAP * 100)
+        window_title = "metrics"
+        plot_title = "metrics = {0:.2f}%".format(mAP * 100)
         x_label = "Average Precision"
-        output_path = RESULTS_FILES_PATH + "/mAP.png"
+        output_path = RESULTS_FILES_PATH + "/metrics.png"
         to_show = True
         plot_color = 'royalblue'
         draw_plot_func(
