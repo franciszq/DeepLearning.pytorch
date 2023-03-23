@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 from configs.dataset_cfg import VOC_CFG, COCO_CFG
 from configs.yolo7_cfg import Config
-from data.voc import get_voc_root_and_classes
 from loss.yolo7_loss import Yolo7Loss
 from metrics.mAP import get_map, get_coco_map
 from models.yolov7_model import Yolo7
@@ -211,7 +210,7 @@ class YOLOv7:
 
                 for i, c in enumerate(top_label):
                     result = {}
-                    top, left, bottom, right = top_boxes[i]
+                    left, top, right, bottom = top_boxes[i]
 
                     result["image_id"] = int(image_id)
                     result["category_id"] = clsid2catid[c]

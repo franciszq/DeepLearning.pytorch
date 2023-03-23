@@ -36,7 +36,7 @@ COCO_CFG = {
         "car",
         "motorcycle",
         "airplane",
-        "bus",
+        "bus"
         "train",
         "truck",
         "boat",
