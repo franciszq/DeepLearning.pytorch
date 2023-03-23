@@ -11,7 +11,7 @@ class ModelRegistry:
 
 
 def register_model():
-    MODEL_REGISTRY = {}
+    model_registry = {}
     # 注册yolo7模型
-    MODEL_REGISTRY.update({"yolo7": ModelRegistry(Yolo7, Yolo7Trainer, yolo7_predictor)})
-    return MODEL_REGISTRY
+    model_registry.update({"yolo7": ModelRegistry(Yolo7, Yolo7Trainer, yolo7_predictor)})
+    return model_registry

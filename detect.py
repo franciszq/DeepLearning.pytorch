@@ -2,8 +2,6 @@ import time
 import torch
 
 from configs import get_cfg
-from models import SSD, CenterNet, YoloV3, Yolo7
-from predict import ssd_decode, centernet_decode, yolov3_decode, yolo7_decode
 from registry import register_model
 from utils.ckpt import CheckPoint
 

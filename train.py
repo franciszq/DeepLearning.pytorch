@@ -1,7 +1,6 @@
 import torch
 from registry import register_model
 
-from trainer import Yolo3Trainer, SSDTrainer, CenterNetTrainer, Yolo7Trainer
 from configs import get_cfg
 
 # 配置文件路径
