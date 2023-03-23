@@ -1,11 +1,10 @@
-import cv2
 import numpy as np
 import torch
 from configs.yolo7_cfg import Config
 from loss.yolo7_loss import Yolo7Loss
 from models.yolov7_model import Yolo7
 from utils.bboxes import xywh_to_xyxy_torch
-from utils.image_process import read_image_and_convert_to_tensor, yolo_correct_boxes
+from utils.image_process import read_image_and_convert_to_tensor, yolo_correct_boxes, read_image
 from utils.visualize import show_detection_results
 from torchvision.ops import nms
 
@@ -62,7 +61,7 @@ class YOLOv7:
 
         if results[0] is None:
             print(f"No object detected")
-            return cv2.imread(image_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+            return read_image(image_path, mode='bgr')
 
         boxes = torch.from_numpy(results[0][:, :4])
         scores = torch.from_numpy(results[0][:, 4] * results[0][:, 5])

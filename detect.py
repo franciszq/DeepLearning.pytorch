@@ -53,6 +53,7 @@ def detect_video(model, src_video_path, dst_video_path, decode_fn, temp_frames='
                 fps = (1 / (t1-t0) + fps) / 2
                 # 加上帧率显示
                 new_frame = cv2.putText(new_frame, f"fps= {fps:.2f}", (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                # 让显示窗口可以调整大小
                 cv2.namedWindow(f"detection_results", 0)
                 cv2.imshow(f"detection_results", new_frame)
                 if cv2.waitKey(1) & 0xff == ord('q'):
