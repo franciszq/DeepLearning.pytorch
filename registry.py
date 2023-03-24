@@ -1,6 +1,6 @@
-from algorithms.yolo_v7 import YOLOv7
+from lib.algorithms.yolo_v7 import YOLOv7
 from configs import yolo7_cfg
-from trainer import Yolo7Trainer
+from lib.trainer import Yolo7Trainer
 
 # 模型注册表
 # key：配置文件

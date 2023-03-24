@@ -1,12 +1,11 @@
 import torch
 
 import numpy as np
-import yaml
 
-from data import transforms as T
+from lib.data import transforms as T
 
 from tqdm import tqdm
-from data.voc import Voc
+from lib.data.voc import Voc
 from torch.utils.data import DataLoader
 
 # 配置文件

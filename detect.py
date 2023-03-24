@@ -6,7 +6,7 @@ import cv2
 import torch
 
 from registry import model_registry
-from utils.ckpt import CheckPoint
+from lib.utils.ckpt import CheckPoint
 
 # 配置文件路径
 CONFIG = "configs/yolo7_cfg.py"
