@@ -74,9 +74,9 @@ class YOLOv7:
             print(f"No object detected")
             return read_image(image_path, mode='bgr')
 
-        boxes = torch.from_numpy(results[0][:, :4])
-        scores = torch.from_numpy(results[0][:, 4] * results[0][:, 5])
-        classes = torch.from_numpy(results[0][:, 6]).to(torch.int32)
+        boxes = results[0][:, :4]
+        scores = results[0][:, 4] * results[0][:, 5]
+        classes = results[0][:, 6].astype(np.int32)
 
         return show_detection_results(image_path=image_path,
                                       dataset_name=self.cfg.dataset.dataset_name,

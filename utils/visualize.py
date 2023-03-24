@@ -19,9 +19,9 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
     可视化目标检测结果
     :param image_path: 原始图片路径
     :param dataset_name: 数据集名称
-    :param boxes: torch.Tensor, shape: (N, 4)
-    :param scores:  torch.Tensor, shape: (N,)
-    :param class_indices:  torch.Tensor, shape: (N,)
+    :param boxes: numpy.ndarray, shape: (N, 4)
+    :param scores:  numpy.ndarray, shape: (N,)
+    :param class_indices:  numpy.ndarray, shape: (N,)
     :param print_on: 是否在控制台打印检测框的信息
     :param save_result: 是否保存检测结果
     :param save_dir: 检测结果保存的文件夹
@@ -36,7 +36,7 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
     # boxes = boxes[mask]
     # scores = scores[mask]
     # class_indices = class_indices[mask]
-    n = boxes.size(0)
+    n = boxes.shape[0]
     if n == 0:
         # 没有检测到目标
         if print_on:
@@ -45,9 +45,7 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
     else:
         if print_on:
             print(f"Detect {n} objects: ")
-        boxes = boxes.cpu().numpy()
-        scores = scores.cpu().numpy()
-        class_indices = class_indices.cpu().numpy().tolist()
+        class_indices = class_indices.tolist()
         class_names = [find_class_name(dataset_name, c, keep_index=False) for c in class_indices]
 
         if print_on:
