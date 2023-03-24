@@ -119,15 +119,15 @@ class YOLOv7:
 
                 with torch.no_grad():
                     preds = model(image)
-                    results = self.decode_box(preds, h, w)
+                    results = self.decode_box(preds, h, w, conf_threshold=0.001)
 
                 if results[0] is None:
                     # 填充0
-                    results.append(np.array([0, 0, 0, 0, 0, 0, 0], dtype=np.float32))
+                    results[0] = np.zeros(shape=(1, 7), dtype=np.float32)
 
-                boxes = torch.from_numpy(results[0][:, :4])
-                scores = torch.from_numpy(results[0][:, 4] * results[0][:, 5])
-                class_indices = torch.from_numpy(results[0][:, 6]).to(torch.int32)
+                boxes = results[0][:, :4]
+                scores = results[0][:, 4] * results[0][:, 5]
+                class_indices = results[0][:, 6].astype(np.int32)
 
                 # 将检测结果写入txt文件中
                 with open(file=os.path.join(detections_path, f"{image_id}.txt"), mode='w', encoding='utf-8') as f:

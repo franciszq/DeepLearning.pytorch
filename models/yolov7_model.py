@@ -434,8 +434,21 @@ class Yolo7(nn.Module):
         # 20, 20, 512 => 20, 20, 3 * 25 & 85
         self.yolo_head_P5 = nn.Conv2d(transition_channels * 32, len(anchors_mask[0]) * (5 + num_classes), 1)
 
+        self.init_weights()
+
         if pretrained:
             CheckPoint.load_pretrained(self, pretrained_weights)
+
+    def init_weights(self):
+        # 初始化
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.normal_(m.weight, 0, 0.02)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.normal_(m.weight, 1, 0.02)
+                nn.init.constant_(m.bias, 0)
 
     def fuse(self):
         print('Fusing layers... ')

@@ -29,18 +29,17 @@ class Config:
         # 数据集
         def __init__(self):
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = COCO_CFG["name"]
+            self.dataset_name = VOC_CFG["name"]
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = COCO_CFG["num_classes"]
+            self.num_classes = VOC_CFG["num_classes"]
 
     class _Train:
         # 训练参数
         def __init__(self):
             # 恢复训练时加载的checkpoint文件，None表示从epoch=0开始训练
-            # 测试时也需要在这里指定checkpoint文件
-            self.resume_training = None
+            self.resume_training = "YOLOv7_voc_epoch-85.pth"
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
-            self.last_epoch = -1
+            self.last_epoch = 85
 
             self.epoch = 100
             self.batch_size = 4
@@ -57,8 +56,8 @@ class Config:
             self.pretrained_weights = "saves/yolov7_weights.pth"
             # 模型保存间隔
             self.save_interval = 5
-            # 每隔多少epoch在验证集上验证一次
-            self.eval_interval = 1
+            # 每隔多少epoch在验证集上验证一次，0表示不验证
+            self.eval_interval = 0
             # 保存模型的文件夹
             self.save_path = "saves"
             # 是否启动tensorboard

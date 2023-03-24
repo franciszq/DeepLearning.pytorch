@@ -176,11 +176,11 @@ class BaseTrainer:
 
             self.lr_scheduler.step()
 
-            if epoch % self.eval_interval == 0:
+            if self.eval_interval != 0 and epoch % self.eval_interval == 0:
                 evaluation = self.evaluate_loop()
                 print([f"{k}={v:.5f}" for k, v in evaluation.items()])
 
-            if epoch % self.save_interval == 0:
+            if epoch % self.save_interval == 0 or epoch == self.total_epoch - 1:
                 CheckPoint.save(model=self.model, path=Path(self.save_path).joinpath(
                     f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"),
                                 optimizer=self.optimizer,
@@ -190,7 +190,6 @@ class BaseTrainer:
         # 保存最终模型
         CheckPoint.save(model=self.model,
                         path=Path(self.save_path).joinpath(f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))
-
 
     def evaluate_loop(self) -> Dict:
         return {}

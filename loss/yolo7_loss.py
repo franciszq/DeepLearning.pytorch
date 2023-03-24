@@ -19,6 +19,7 @@ class Yolo7Loss:
         #   40x40的特征层对应的anchor是[36, 75],[76, 55],[72, 146]
         #   80x80的特征层对应的anchor是[12, 16],[19, 36],[40, 28]
         # -----------------------------------------------------------#
+        anchors = anchors.copy()
         self.anchors = [anchors[mask] for mask in anchors_mask]
         self.num_classes = num_classes
         self.input_shape = input_shape
@@ -124,7 +125,7 @@ class Yolo7Loss:
         bs = tobj.shape[0]
 
         loss = box_loss + obj_loss + cls_loss
-        return loss
+        return loss, box_loss, obj_loss, cls_loss
 
     def build_targets(self, predictions, targets, imgs):
         # -------------------------------------------#

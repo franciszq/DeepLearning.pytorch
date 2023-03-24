@@ -20,9 +20,9 @@ class Yolo7Trainer(BaseTrainer):
         self.cfg = cfg
         self.device = device
         # 损失函数的返回值要与这里的metrics_name一一对应
-        self.metric_names = ["loss"]
+        self.metric_names = ["loss", "box_loss", "obj_loss", "cls_loss"]
         # 是否在tqdm进度条中显示上述metrics
-        self.show_option = [True]
+        self.show_option = [True, True, True, True]
 
     def set_model_algorithm(self):
         self.model_algorithm = YOLOv7(self.cfg, self.device)
@@ -64,10 +64,8 @@ class Yolo7Trainer(BaseTrainer):
                                               gamma=self.gamma,
                                               last_epoch=self.last_epoch)
 
-
     def set_criterion(self):
         self.criterion = self.model_algorithm.build_loss()
-
 
     def train_loop(self, images, targets, scaler) -> List:
         images = images.to(device=self.device)
@@ -77,17 +75,17 @@ class Yolo7Trainer(BaseTrainer):
         if self.mixed_precision:
             with torch.cuda.amp.autocast():
                 preds = self.model(images)
-                loss = self.criterion(preds, targets, images)
+                loss, box_loss, obj_loss, cls_loss = self.criterion(preds, targets, images)
             scaler.scale(loss).backward()
             scaler.step(self.optimizer)
             scaler.update()
         else:
             preds = self.model(images)
-            loss = self.criterion(preds, targets, images)
+            loss, box_loss, obj_loss, cls_loss = self.criterion(preds, targets, images)
             loss.backward()
             self.optimizer.step()
 
-        return [loss]
+        return [loss, box_loss, obj_loss, cls_loss]
 
     def evaluate_loop(self) -> Dict:
         self.model.eval()
@@ -100,7 +98,7 @@ class Yolo7Trainer(BaseTrainer):
                     images = images.to(device=self.device)
                     targets = targets.to(device=self.device)
                     preds = self.model(images)
-                    loss_value = self.criterion(preds, targets, images)
+                    loss_value, _, _, _ = self.criterion(preds, targets, images)
 
                     val_loss += loss_value.item()
 
