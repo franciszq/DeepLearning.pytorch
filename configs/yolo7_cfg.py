@@ -13,8 +13,6 @@ class Config:
 
     class _Arch:
         def __init__(self):
-            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            # self.num_classes = COCO["num_classes"]
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 640, 640)
             self.anchors = [
@@ -29,9 +27,9 @@ class Config:
         # 数据集
         def __init__(self):
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = VOC_CFG["name"]
+            self.dataset_name = COCO_CFG["name"]
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = VOC_CFG["num_classes"]
+            self.num_classes = COCO_CFG["num_classes"]
 
     class _Train:
         # 训练参数

@@ -7,9 +7,9 @@ from utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/yolo7_cfg.py"
 # "voc" or "coco"
-DATASET = "voc"
+DATASET = "coco"
 # 权重文件位置，注意加载权重时参数pure的设置
-WEIGHTS = "saves/YOLOv7_voc_final.pth"
+WEIGHTS = "saves/yolov7_weights.pth"
 
 
 def main():
