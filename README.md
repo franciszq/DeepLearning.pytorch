@@ -18,6 +18,8 @@ pip install -r requirements.txt
 ## 样例
 1. YOLOv7 on VOC2012
 
+[sample 1](https://github.com/calmisential/Detection.pytorch/blob/main/performance/2010_006598%402023-03-24-12-36-57.jpg)
+[sample_2](https://github.com/calmisential/Detection.pytorch/blob/main/performance/2010_006639%402023-03-24-12-36-57.jpg)
 
 ## 训练好的模型
 |   模型名称    | 输入图片尺寸（高，宽） |     VOC val      |      COCO val2017       |                                                                                     下载地址                                                                                     |  
