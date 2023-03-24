@@ -16,9 +16,9 @@ pip install -r requirements.txt
 ```
 
 ## 训练好的模型
-| 模型名称       | 输入图片尺寸（高，宽） | VOC val | COCO val2017        | 下载地址 |  
-|-----------|-------------| --- |---------------------| --- |
-| YOLOv7    | (640, 640)  |  mAP = 75.75% | AP(0.5~0.95) = 48 % |[voc权重](https://github.com/calmisential/Detection.pytorch/releases/download/YOLOv7_weights-voc/YOLOv7_voc_final.pth) [coco权重](https://github.com/bubbliiiing/yolov7-pytorch)|
+|   模型名称    | 输入图片尺寸（高，宽） |     VOC val      |      COCO val2017       |                                                                                     下载地址                                                                                     |  
+|:---------:|:----:|:----------------:|:-----------------------:|:--------------------:|
+|  YOLOv7   | (640, 640)  | [mAP = 75.75%](https://github.com/calmisential/Detection.pytorch/blob/main/performance/yolov7_voc_val.txt) | [AP(0.5~0.95) = 48 %](https://github.com/calmisential/Detection.pytorch/blob/main/performance/yolov7_coco_val2017.txt) | [voc权重](https://github.com/calmisential/Detection.pytorch/releases/download/YOLOv7_weights-voc/YOLOv7_voc_final.pth) [coco权重](https://github.com/bubbliiiing/yolov7-pytorch) |
 
 ## 准备数据集
 - 对于COCO数据集，从[这里](https://cocodataset.org/#download)下载2017 Train/Val images和2017 Train/Val annotations，
