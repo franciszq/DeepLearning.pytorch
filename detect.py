@@ -11,11 +11,11 @@ from utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/yolo7_cfg.py"
 # 权重文件位置，注意加载权重时参数pure的设置
-WEIGHTS = "saves/yolov7_weights.pth"
+WEIGHTS = "saves/YOLOv7_voc_final.pth"
 # 输入文件类型：视频还是图片
 TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/2007_002273.jpg"]
+IMAGE_PATHS = ["test/2010_006598.jpg", "test/2010_006639.jpg", "test/2010_006643.jpg"]
 # 原视频路径
 SRC_VIDEO = "test/1.flv"
 # 目标视频路径
