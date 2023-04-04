@@ -113,7 +113,7 @@ class L2Normalize(nn.Module):
 class SSD(nn.Module):
     def __init__(self, cfg: Config):
         super(SSD, self).__init__()
-        self.num_classes = cfg.arch.num_classes + 1
+        self.num_classes = cfg.dataset.num_classes
         self.backbone_name = cfg.arch.backbone.lower()
         # 每个stage分支输出的feature map中每个像素位置处的先验框数量
         self.num_boxes_per_pixel = [len(ar) + 1 for ar in cfg.arch.aspect_ratios]
@@ -177,6 +177,3 @@ class SSD(nn.Module):
         conf = torch.reshape(conf, shape=(conf.shape[0], -1, self.num_classes))  # (batch, 8732, self.num_classes)
 
         return loc, conf
-
-    def get_model_name(self):
-        return f"{self.backbone_name}-ssd"

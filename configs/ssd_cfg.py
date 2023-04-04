@@ -1,3 +1,5 @@
+from .dataset_cfg import COCO_CFG, VOC_CFG
+
 
 class Config:
     def __init__(self):
@@ -12,8 +14,6 @@ class Config:
     class _Arch:
         def __init__(self):
             self.backbone = "vgg16"   # 'vgg16' or 'mobilenetv1'
-            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = 20
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 300, 300)
             # 先验框的宽高比
@@ -32,8 +32,10 @@ class Config:
     class _Dataset:
         # 数据集
         def __init__(self):
+            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
+            self.num_classes = VOC_CFG["num_classes"]
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = "voc"
+            self.dataset_name = VOC_CFG["name"]
 
     class _Train:
         # 训练参数
@@ -54,6 +56,8 @@ class Config:
 
             # 是否使用预训练权重
             self.pretrained = False
+            # 预训练模型的权重路径
+            self.pretrained_weights = "saves/yolov7_weights.pth"
             # 模型保存间隔
             self.save_interval = 5
             # 每隔多少epoch在验证集上验证一次
@@ -80,6 +84,7 @@ class Config:
         # 优化器
         def __init__(self):
             self.name = "Adam"
+            self.scheduler_name = "multi_step"
 
     class _Log:
         # 训练日志
