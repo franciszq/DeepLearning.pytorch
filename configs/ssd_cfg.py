@@ -27,7 +27,7 @@ class Config:
             self.feature_channels = [512, 1024, 512, 256, 256, 256]
             self.feature_shapes = [38, 19, 10, 5, 3, 1]
             # 先验框的宽和高
-            self.anchor_size = [30, 60, 111, 162, 213, 264, 315]
+            self.anchor_sizes = [30, 60, 111, 162, 213, 264, 315]
 
     class _Dataset:
         # 数据集

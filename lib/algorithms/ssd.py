@@ -8,13 +8,18 @@ class Ssd:
     def __init__(self, cfg: Config, device):
         self.cfg = cfg
         self.device = device
+        # 输入图片的尺寸
+        self.input_image_size = self.cfg.arch.input_size[1:]
+        # 与锚框有关的参数
+        self.anchor_sizes = self.cfg.arch.anchor_sizes
+        self.feature_shapes = self.cfg.arch.feature_shapes
+        self.aspect_ratios = self.cfg.arch.aspect_ratios
         # 锚框
-        self.anchors = self._get_anchors()
+        self.anchors = self._get_ssd_anchors()
         # 类别数目
         self.num_classes = self.cfg.dataset.num_classes
         # 正负样本比例
         self.neg_pos_ratio = self.cfg.loss.neg_pos_ratio
-    
 
     def build_model(self):
         """构建网络模型"""
@@ -22,28 +27,25 @@ class Ssd:
         model_name = "SSD"
         return model, model_name
 
-
     def build_loss(self):
         """构建损失函数"""
         loss = MultiBoxLossV2(neg_pos_ratio=self.neg_pos_ratio,
                               num_classes=self.num_classes)
         return loss
 
-    
-
-    def _get_ssd_anchors(self, input_image_shape, anchor_sizes, feature_shapes, aspect_ratios):
-        image_h, image_w = input_image_shape
+    def _get_ssd_anchors(self):
+        image_h, image_w = self.input_image_size
         anchors = []
-        for i in range(len(feature_shapes)):
+        for i in range(len(self.feature_shapes)):
             # 先验框的短边和长边
-            min_size = anchor_sizes[i]
-            max_size = anchor_sizes[i + 1]
+            min_size = self.anchor_sizes[i]
+            max_size = self.anchor_sizes[i + 1]
             # 特征图的高和宽，它们相等
-            feature_h = feature_shapes[i]
+            feature_h = self.feature_shapes[i]
             # 对于每个像素位置，根据aspect_ratio生成不同宽、高比的先验框
             box_widths = []
             box_heights = []
-            for ar in aspect_ratios[i]:
+            for ar in self.aspect_ratios[i]:
                 if ar == 1:
                     box_widths.append(min_size)
                     box_heights.append(min_size)
@@ -68,7 +70,7 @@ class Ssd:
             anchor = np.concatenate((center_x, center_y), axis=1)  # (feature_h**2, 2)
             # 对于每一种宽高比例，都需要一个对应的先验框
             # shape: (feature_h**2, 4*(len(aspect_ratios[i])+1))
-            anchor = np.tile(anchor, (1, (len(aspect_ratios[i]) + 1) * 2))
+            anchor = np.tile(anchor, (1, (len(self.aspect_ratios[i]) + 1) * 2))
 
             # 转换为xmin, ymin, xmax, ymax格式
             anchor[:, ::4] -= half_box_widths  # shape: (feature_h**2, len(aspect_ratios[i])+1)
