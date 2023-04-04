@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from lib import data as T
+from lib.data import transforms as T
 
 from lib.data.voc import Voc
 

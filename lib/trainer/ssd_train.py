@@ -1,5 +1,9 @@
+from functools import partial
 from lib.algorithms.ssd import Ssd
+from lib.data.collate import ssd_collate
+from lib.data.detection_dataset import DetectionDataset
 from lib.trainer.base import BaseTrainer
+from torch.utils.data import DataLoader
 
 
 class SsdTrainer(BaseTrainer):
@@ -21,7 +25,26 @@ class SsdTrainer(BaseTrainer):
 
 
     def load_data(self):
-        pass
+        train_dataset = DetectionDataset(dataset_name=self.dataset_name,
+                                         input_shape=self.input_image_size[1:],
+                                         mosaic=True,
+                                         mosaic_prob=0.5,
+                                         epoch_length=self.total_epoch,
+                                         special_aug_ratio=0.7,
+                                         train=True)
+        val_dataset = DetectionDataset(dataset_name=self.dataset_name,
+                                       input_shape=self.input_image_size[1:],
+                                       mosaic=False,
+                                       mosaic_prob=0,
+                                       epoch_length=self.total_epoch,
+                                       special_aug_ratio=0,
+                                       train=False)
+        self.train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size,
+                                           shuffle=True, num_workers=self.num_workers,
+                                           drop_last=True, collate_fn=partial(ssd_collate, ssd_algorithm=self.model_algorithm))
+        self.val_dataloader = DataLoader(val_dataset, batch_size=self.batch_size,
+                                         shuffle=True, num_workers=self.num_workers,
+                                         drop_last=True, collate_fn=partial(ssd_collate, ssd_algorithm=self.model_algorithm))
 
     def set_optimizer(self):
         pass
