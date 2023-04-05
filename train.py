@@ -5,7 +5,7 @@ from registry import model_registry
 
 
 # 配置文件路径
-CONFIG = "configs/yolo7_cfg.py"
+CONFIG = "configs/ssd_cfg.py"
 # 0：训练模式，1：验证模式
 MODE = 0
 

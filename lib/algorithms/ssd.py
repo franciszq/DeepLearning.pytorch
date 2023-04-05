@@ -18,13 +18,15 @@ class Ssd:
         self.aspect_ratios = self.cfg.arch.aspect_ratios
         # 锚框
         self.anchors = self._get_ssd_anchors()
+        self.num_anchors = self.anchors.shape[0]
         # 类别数目
         self.num_classes = self.cfg.dataset.num_classes
         # 正负样本比例
-        self.neg_pos_ratio = self.cfg.loss.neg_pos_ratio
+        self.neg_pos_ratio = self.cfg.loss.neg_pos
         variance = np.array(self.cfg.loss.variance, dtype=np.float32)
         # 将variance变成[0.1, 0.1, 0.2, 0.2]
         self.variance = np.repeat(variance, 2, axis=0)
+        self.overlap_threshold = self.cfg.loss.overlap_threshold
 
     def build_model(self):
         """构建网络模型"""
@@ -44,7 +46,7 @@ class Ssd:
         :param label: numpy.ndarray, shape: (N, 6(_, class_id, cx, cy, w, h))
         :return: torch.Tensor, shape: (8732, 5(center_x, center_y, w, h, label))
         """
-        num_anchor = self.anchors.shape[0]
+        
         label = label[:, 1:]
         # # 数据集的类别标签增加1，因为背景的类别是0
         label[:, 1] += 1
@@ -62,7 +64,7 @@ class Ssd:
         # assignment[:, :4] 坐标
         # assignment[:, 4:-1] one-hot编码
         # assignment[:, -1] 当前先验框是否有对应的目标，0为没有，1为有
-        assignment = np.zeros((num_anchor, 4 + 1 + self.num_classes + 1),
+        assignment = np.zeros((self.num_anchors, 4 + 1 + self.num_classes + 1),
                               dtype=np.float32)
         assignment[:, 4] = 1.0  # 默认先验框为背景
         if len(true_label) == 0:
@@ -192,10 +194,10 @@ class Ssd:
         # ------------------------------------------------#
         encoded_box[:, :2][assign_mask] = box_center - assigned_anchors_center
         encoded_box[:, :2][assign_mask] /= assigned_anchors_wh
-        encoded_box[:, :2][assign_mask] /= np.array(self.variances)[:2]
+        encoded_box[:, :2][assign_mask] /= np.array(self.variance)[:2]
 
         encoded_box[:, 2:4][assign_mask] = np.log(box_wh / assigned_anchors_wh)
-        encoded_box[:, 2:4][assign_mask] /= np.array(self.variances)[2:4]
+        encoded_box[:, 2:4][assign_mask] /= np.array(self.variance)[2:4]
         return encoded_box.ravel()
 
     def _get_ssd_anchors(self):

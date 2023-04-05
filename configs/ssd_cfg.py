@@ -57,7 +57,7 @@ class Config:
             # 是否使用预训练权重
             self.pretrained = False
             # 预训练模型的权重路径
-            self.pretrained_weights = "saves/yolov7_weights.pth"
+            self.pretrained_weights = ""
             # 模型保存间隔
             self.save_interval = 5
             # 每隔多少epoch在验证集上验证一次
