@@ -47,14 +47,11 @@ class Ssd:
         :param label: numpy.ndarray, shape: (N, 6(_, class_id, cx, cy, w, h))
         :return: torch.Tensor, shape: (8732, 5(center_x, center_y, w, h, label))
         """
-        
-        label = label[:, 1:]
-        # # 数据集的类别标签增加1，因为背景的类别是0
+        # 数据集的类别标签增加1，因为背景的类别是0
         label[:, 1] += 1
-        label = label.astype(np.int32)
-        class_label = label[:, 0].astype(np.int32)
+        class_label = label[:, 1].astype(np.int32)
         # 坐标 (N, 4)
-        coord_label = label[:, 1:]
+        coord_label = label[:, 2:]
         # 坐标由(cx, cy, w, h)转换为(xmin, ymin, xmax, ymax)
         coord_label = xywh_to_xyxy(coord_label)
         # one-hot编码  (N, 21)
@@ -69,7 +66,7 @@ class Ssd:
                               dtype=np.float32)
         assignment[:, 4] = 1.0  # 默认先验框为背景
         if len(true_label) == 0:
-            return assignment
+            return torch.from_numpy(assignment)
         # 对每一个真实框都进行iou计算
         encoded_boxes = np.apply_along_axis(self._encode_box, 1,
                                             true_label[:, :4])
@@ -113,9 +110,7 @@ class Ssd:
         # 通过assign_boxes我们就获得了，输入进来的这张图片，应该有的预测结果是什么样子的
         return torch.from_numpy(assignment)
 
-    def _encode_box(self,
-                    box,
-                    return_iou=True):
+    def _encode_box(self, box, return_iou=True):
         # ---------------------------------------------#
         #   计算当前真实框和先验框的重合情况
         #   iou [self.num_anchors]
@@ -245,8 +240,8 @@ class Ssd:
             anchor = np.tile(anchor, (1, (len(self.aspect_ratios[i]) + 1) * 2))
 
             # 转换为xmin, ymin, xmax, ymax格式
-            anchor[:, ::
-                   4] -= half_box_widths  # shape: (feature_h**2, len(aspect_ratios[i])+1)
+            # shape: (feature_h**2, len(aspect_ratios[i])+1)
+            anchor[:, ::4] -= half_box_widths
             anchor[:, 1::4] -= half_box_heights
             anchor[:, 2::4] += half_box_widths
             anchor[:, 3::4] += half_box_heights
