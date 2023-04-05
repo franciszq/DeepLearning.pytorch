@@ -113,7 +113,7 @@ class L2Normalize(nn.Module):
 class SSD(nn.Module):
     def __init__(self, cfg: Config):
         super(SSD, self).__init__()
-        self.num_classes = cfg.dataset.num_classes
+        self.num_classes = cfg.dataset.num_classes + 1
         self.backbone_name = cfg.arch.backbone.lower()
         # 每个stage分支输出的feature map中每个像素位置处的先验框数量
         self.num_boxes_per_pixel = [len(ar) + 1 for ar in cfg.arch.aspect_ratios]

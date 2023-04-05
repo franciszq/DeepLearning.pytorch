@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from configs.ssd_cfg import Config
 from lib.loss.multi_box_loss import MultiBoxLossV2
 from lib.models.ssd_model import SSD
@@ -58,7 +59,7 @@ class Ssd:
         coord_label = xywh_to_xyxy(coord_label)
         # one-hot编码  (N, 21)
         one_hot_label = np.eye(self.num_classes + 1)[class_label]
-        # 包含坐标和one-hot编码的标签的label (N, 24)
+        # 包含坐标和one-hot编码的标签的label (N, 4 + 21)
         true_label = np.concatenate((coord_label, one_hot_label), axis=-1)
 
         # assignment[:, :4] 坐标
@@ -101,16 +102,16 @@ class Ssd:
         assignment[:, :4][best_iou_mask] = encoded_boxes[
             best_iou_idx, np.arange(assign_num), :4]
         # ----------------------------------------------------------#
-        #   4代表为背景的概率，设定为0，因为这些先验框有对应的物体
+        #   4代表为背景的概率，设为0，因为这些先验框有对应的物体
         # ----------------------------------------------------------#
         assignment[:, 4][best_iou_mask] = 0
-        assignment[:, 5:-1][best_iou_mask] = true_label[best_iou_idx, 4:]
+        assignment[:, 5:-1][best_iou_mask] = true_label[best_iou_idx, 5:]
         # ----------------------------------------------------------#
         #   -1表示先验框是否有对应的物体
         # ----------------------------------------------------------#
         assignment[:, -1][best_iou_mask] = 1
         # 通过assign_boxes我们就获得了，输入进来的这张图片，应该有的预测结果是什么样子的
-        return assignment
+        return torch.from_numpy(assignment)
 
     def _encode_box(self,
                     box,
