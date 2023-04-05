@@ -6,6 +6,7 @@ from lib.utils.bboxes import xywh_to_xyxy
 
 
 class Ssd:
+
     def __init__(self, cfg: Config, device):
         self.cfg = cfg
         self.device = device
@@ -21,6 +22,9 @@ class Ssd:
         self.num_classes = self.cfg.dataset.num_classes
         # 正负样本比例
         self.neg_pos_ratio = self.cfg.loss.neg_pos_ratio
+        variance = np.array(self.cfg.loss.variance, dtype=np.float32)
+        # 将variance变成[0.1, 0.1, 0.2, 0.2]
+        self.variance = np.repeat(variance, 2, axis=0)
 
     def build_model(self):
         """构建网络模型"""
@@ -58,12 +62,14 @@ class Ssd:
         # assignment[:, :4] 坐标
         # assignment[:, 4:-1] one-hot编码
         # assignment[:, -1] 当前先验框是否有对应的目标，0为没有，1为有
-        assignment = np.zeros((num_anchor, 4 + 1 + self.num_classes + 1), dtype=np.float32)
-        assignment[:, 4] = 1.0   # 默认先验框为背景
+        assignment = np.zeros((num_anchor, 4 + 1 + self.num_classes + 1),
+                              dtype=np.float32)
+        assignment[:, 4] = 1.0  # 默认先验框为背景
         if len(true_label) == 0:
             return assignment
         # 对每一个真实框都进行iou计算
-        encoded_boxes = np.apply_along_axis(self._encode_box, 1, true_label[:, :4])
+        encoded_boxes = np.apply_along_axis(self._encode_box, 1,
+                                            true_label[:, :4])
 
         # ---------------------------------------------------#
         #   在reshape后，获得的encoded_boxes的shape为：
@@ -90,7 +96,8 @@ class Ssd:
         # ---------------------------------------------------#
         #   编码后的真实框的赋值
         # ---------------------------------------------------#
-        assignment[:, :4][best_iou_mask] = encoded_boxes[best_iou_idx, np.arange(assign_num), :4]
+        assignment[:, :4][best_iou_mask] = encoded_boxes[
+            best_iou_idx, np.arange(assign_num), :4]
         # ----------------------------------------------------------#
         #   4代表为背景的概率，设定为0，因为这些先验框有对应的物体
         # ----------------------------------------------------------#
@@ -103,8 +110,9 @@ class Ssd:
         # 通过assign_boxes我们就获得了，输入进来的这张图片，应该有的预测结果是什么样子的
         return assignment
 
-
-    def _encode_box(self, box, return_iou=True, variances=[0.1, 0.1, 0.2, 0.2]):
+    def _encode_box(self,
+                    box,
+                    return_iou=True):
         # ---------------------------------------------#
         #   计算当前真实框和先验框的重合情况
         #   iou [self.num_anchors]
@@ -128,7 +136,8 @@ class Ssd:
         # ---------------------------------------------#
         #   先验框的面积
         # ---------------------------------------------#
-        area_gt = (self.anchors[:, 2] - self.anchors[:, 0]) * (self.anchors[:, 3] - self.anchors[:, 1])
+        area_gt = (self.anchors[:, 2] - self.anchors[:, 0]) * (
+            self.anchors[:, 3] - self.anchors[:, 1])
         # ---------------------------------------------#
         #   计算iou
         # ---------------------------------------------#
@@ -171,8 +180,10 @@ class Ssd:
         # ---------------------------------------------#
         #   再计算重合度较高的先验框的中心与长宽
         # ---------------------------------------------#
-        assigned_anchors_center = (assigned_anchors[:, 0:2] + assigned_anchors[:, 2:4]) * 0.5
-        assigned_anchors_wh = (assigned_anchors[:, 2:4] - assigned_anchors[:, 0:2])
+        assigned_anchors_center = (assigned_anchors[:, 0:2] +
+                                   assigned_anchors[:, 2:4]) * 0.5
+        assigned_anchors_wh = (assigned_anchors[:, 2:4] -
+                               assigned_anchors[:, 0:2])
 
         # ------------------------------------------------#
         #   逆向求取ssd应该有的预测结果
@@ -181,14 +192,11 @@ class Ssd:
         # ------------------------------------------------#
         encoded_box[:, :2][assign_mask] = box_center - assigned_anchors_center
         encoded_box[:, :2][assign_mask] /= assigned_anchors_wh
-        encoded_box[:, :2][assign_mask] /= np.array(variances)[:2]
+        encoded_box[:, :2][assign_mask] /= np.array(self.variances)[:2]
 
         encoded_box[:, 2:4][assign_mask] = np.log(box_wh / assigned_anchors_wh)
-        encoded_box[:, 2:4][assign_mask] /= np.array(variances)[2:4]
+        encoded_box[:, 2:4][assign_mask] /= np.array(self.variances)[2:4]
         return encoded_box.ravel()
-
-
-
 
     def _get_ssd_anchors(self):
         image_h, image_w = self.input_image_size
@@ -212,25 +220,30 @@ class Ssd:
                     box_widths.append(min_size * np.sqrt(ar))
                     box_heights.append(min_size / np.sqrt(ar))
 
-            half_box_widths = np.array(box_widths) / 2.0  # shape: (len(aspect_ratios[i])+1,)
+            half_box_widths = np.array(
+                box_widths) / 2.0  # shape: (len(aspect_ratios[i])+1,)
             half_box_heights = np.array(box_heights) / 2.0
 
             # 特征层上一个像素点映射到原图上对应的像素长度
             pixel_length = [image_h / feature_h, image_w / feature_h]
             # 生成网格中心
-            c_x = np.linspace(0.5 * pixel_length[1], image_w - 0.5 * pixel_length[1], feature_h)
-            c_y = np.linspace(0.5 * pixel_length[0], image_h - 0.5 * pixel_length[0], feature_h)
+            c_x = np.linspace(0.5 * pixel_length[1],
+                              image_w - 0.5 * pixel_length[1], feature_h)
+            c_y = np.linspace(0.5 * pixel_length[0],
+                              image_h - 0.5 * pixel_length[0], feature_h)
             center_x, center_y = np.meshgrid(c_x, c_y)
             center_x = np.reshape(center_x, (-1, 1))  # (feature_h**2, 1)
             center_y = np.reshape(center_y, (-1, 1))  # (feature_h**2, 1)
 
-            anchor = np.concatenate((center_x, center_y), axis=1)  # (feature_h**2, 2)
+            anchor = np.concatenate((center_x, center_y),
+                                    axis=1)  # (feature_h**2, 2)
             # 对于每一种宽高比例，都需要一个对应的先验框
             # shape: (feature_h**2, 4*(len(aspect_ratios[i])+1))
             anchor = np.tile(anchor, (1, (len(self.aspect_ratios[i]) + 1) * 2))
 
             # 转换为xmin, ymin, xmax, ymax格式
-            anchor[:, ::4] -= half_box_widths  # shape: (feature_h**2, len(aspect_ratios[i])+1)
+            anchor[:, ::
+                   4] -= half_box_widths  # shape: (feature_h**2, len(aspect_ratios[i])+1)
             anchor[:, 1::4] -= half_box_heights
             anchor[:, 2::4] += half_box_widths
             anchor[:, 3::4] += half_box_heights
