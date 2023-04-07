@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 
-from lib.algorithms.ssd import Ssd
 
 def yolo7_collate(batch):
     images = []

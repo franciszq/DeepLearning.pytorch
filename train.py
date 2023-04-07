@@ -27,7 +27,7 @@ def main():
         # 验证模式
         m.evaluate(weights=None)
     else:
-        raise ValueError(f"Unsupported mode：{MODE}")
+        raise ValueError(f"Unsupported mode: {MODE}")
 
 
 if __name__ == '__main__':
