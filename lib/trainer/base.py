@@ -11,7 +11,24 @@ from tqdm import tqdm
 from lib.utils.ckpt import CheckPoint
 
 
+# 装饰器，用于给模型添加预训练权重
+def use_pretrained_model(init_fn):
+    def wrapper(*args, **kwargs):
+        ret = init_fn(*args, **kwargs)
+        self = args[0]
+        if self.pretrained and CheckPoint.check(self.pretrained_weights):
+            CheckPoint.load_pure(path=self.pretrained_weights,
+                                 device=self.device,
+                                 model=self.model)
+            print(f"Load pretrained weights from {self.pretrained_weights}.")
+
+        return ret
+
+    return wrapper
+
+
 class MeanMetric:
+
     def __init__(self):
         self.accumulated = 0
         self.count = 0
@@ -28,6 +45,7 @@ class MeanMetric:
 
 
 class BaseTrainer:
+
     def __init__(self, cfg, device):
         self.device = device
         self.cfg = cfg
@@ -54,6 +72,10 @@ class BaseTrainer:
         self.eval_interval = cfg.train.eval_interval
         self.save_interval = cfg.train.save_interval
         self.save_path = cfg.train.save_path
+
+        # 是否使用预训练模型
+        self.pretrained = cfg.train.pretrained
+        self.pretrained_weights = cfg.train.pretrained_weights
         # 自动创建目录用于存放保存的模型
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
@@ -97,6 +119,7 @@ class BaseTrainer:
     def set_model_algorithm(self):
         return None
 
+    @use_pretrained_model
     def initialize_model(self):
         pass
 
@@ -121,8 +144,12 @@ class BaseTrainer:
         if self.tensorboard_on:
             writer = SummaryWriter()
             try:
-                writer.add_graph(self.model, torch.randn(self.batch_size, *self.input_image_size, dtype=torch.float32,
-                                                         device=self.device))
+                writer.add_graph(
+                    self.model,
+                    torch.randn(self.batch_size,
+                                *self.input_image_size,
+                                dtype=torch.float32,
+                                device=self.device))
             except Exception:
                 traceback.print_exc()
 
@@ -135,7 +162,8 @@ class BaseTrainer:
                             optimizer=self.optimizer,
                             scheduler=self.lr_scheduler)
             print(
-                f"After loading weights from {self.resume_training_weights}, it will resume training from epoch-{self.last_epoch}.")
+                f"After loading weights from {self.resume_training_weights}, it will resume training from epoch-{self.last_epoch}."
+            )
 
         if self.mixed_precision:
             scaler = torch.cuda.amp.GradScaler()
@@ -151,27 +179,34 @@ class BaseTrainer:
 
             self.train_dataloader.dataset.epoch_now = epoch
 
-            with tqdm(self.train_dataloader, desc=f"Epoch-{epoch}/{self.total_epoch}") as pbar:
+            with tqdm(self.train_dataloader,
+                      desc=f"Epoch-{epoch}/{self.total_epoch}") as pbar:
                 for i, (images, targets) in enumerate(pbar):
                     metrics = self.train_loop(images, targets, scaler)
                     assert len(metrics) == n
                     for j in range(n):
                         train_metrics[j].update(metrics[j].item())
                     # 当前学习率
-                    current_lr = self.optimizer.state_dict()['param_groups'][0]['lr']
+                    current_lr = self.optimizer.state_dict(
+                    )['param_groups'][0]['lr']
                     if self.tensorboard_on:
-                        writer.add_scalar(tag="Learning rate", scalar_value=current_lr,
-                                          global_step=epoch * len(self.train_dataloader) + i)
+                        writer.add_scalar(
+                            tag="Learning rate",
+                            scalar_value=current_lr,
+                            global_step=epoch * len(self.train_dataloader) + i)
                         for k in range(n):
-                            writer.add_scalar(tag=f"Train/{self.metric_names[k]}",
-                                              scalar_value=metrics[k].item(),
-                                              global_step=epoch * len(self.train_dataloader) + i)
+                            writer.add_scalar(
+                                tag=f"Train/{self.metric_names[k]}",
+                                scalar_value=metrics[k].item(),
+                                global_step=epoch * len(self.train_dataloader)
+                                            + i)
 
                     # 设置进度条后缀
                     postfix_info = {}
                     for p in range(n):
                         if self.show_option[p]:
-                            postfix_info[self.metric_names[p]] = f"{(train_metrics[p].result()):.5f}"
+                            postfix_info[self.metric_names[
+                                p]] = f"{(train_metrics[p].result()):.5f}"
                     pbar.set_postfix(postfix_info)
 
             self.lr_scheduler.step()
@@ -181,15 +216,20 @@ class BaseTrainer:
                 print([f"{k}={v:.5f}" for k, v in evaluation.items()])
 
             if epoch % self.save_interval == 0 or epoch == self.total_epoch - 1:
-                CheckPoint.save(model=self.model, path=Path(self.save_path).joinpath(
-                    f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"),
-                                optimizer=self.optimizer,
-                                scheduler=self.lr_scheduler)
+                CheckPoint.save(
+                    model=self.model,
+                    path=Path(self.save_path).joinpath(
+                        f"{self.model_name}_{self.dataset_name.lower()}_epoch-{epoch}.pth"
+                    ),
+                    optimizer=self.optimizer,
+                    scheduler=self.lr_scheduler)
         if self.tensorboard_on:
             writer.close()
         # 保存最终模型
-        CheckPoint.save(model=self.model,
-                        path=Path(self.save_path).joinpath(f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))
+        CheckPoint.save(
+            model=self.model,
+            path=Path(self.save_path).joinpath(
+                f"{self.model_name}_{self.dataset_name.lower()}_final.pth"))
 
     def evaluate_loop(self) -> Dict:
         return {}
