@@ -4,10 +4,12 @@ from random import sample, shuffle
 import cv2
 import numpy as np
 import xml.dom.minidom as xdom
+
+from pycocotools.coco import COCO
 from torch.utils.data import Dataset
 import torchvision.transforms.functional as TF
 
-from configs.dataset_cfg import VOC_CFG
+from configs.dataset_cfg import COCO_CFG, VOC_CFG
 from lib.utils.image_process import read_image, cv2_paste
 
 
@@ -49,8 +51,7 @@ class DetectionDataset(Dataset):
         if dataset_name == 'voc':
             self.root, self.class_names, self.images, self.xml_paths, self.class2index = self._parse_voc(train)
         else:
-            # TODO COCO数据集解析
-            pass
+            self.coco_images_root, self.coco_ids, self.coco = self._get_coco(train)
 
     def __len__(self):
         return len(self.images)
@@ -75,8 +76,25 @@ class DetectionDataset(Dataset):
 
 
         else:
-            # TODO COCO数据集
-            pass
+            if self.mosaic and get_random_number() < self.mosaic_prob and \
+                    self.epoch_now < self.epoch_length * self.special_aug_ratio:
+                # TODO mosaic for coco
+                raise NotImplementedError("Mosaic for coco is not implemented yet.")
+            else:
+                img_id = self.coco_ids[item]
+                ann_ids = self.coco.getAnnIds(imgIds=img_id)
+                target = self.coco.loadAnns(ann_ids)
+                # 图片路径
+                image_path = os.path.join(self.coco_images_root, self.coco.loadImgs(img_id)[0]['file_name'])
+                assert os.path.exists(image_path), f"Image not exists: {image_path}"
+                # 读取图片
+                image = read_image(image_path)
+                # 解析标注
+                target = self._get_true_bbox(target)
+                target = np.array(target, dtype=np.float32)
+                target = np.reshape(target, (-1, 5))
+
+                image, box = self.get_random_data(image, target, random=self.train)
 
         # 归一化、通道交换
         image_tensor = TF.to_tensor(image)
@@ -394,6 +412,42 @@ class DetectionDataset(Dataset):
         class2index = dict((v, k) for k, v in enumerate(voc_class_names))
 
         return voc_root, voc_class_names, image_paths, xml_paths, class2index
+
+    def _get_coco(self, train=True):
+        # coco数据集的根目录和类别名
+        coco_root, coco_class_names = COCO_CFG["root"], COCO_CFG["classes"]
+        mode = "train" if train else "val"
+        images_root = os.path.join(coco_root, "images", f"{mode}2017")
+        anno_file = os.path.join(coco_root, "annotations", f"instances_{mode}2017.json")
+        coco = COCO(annotation_file=anno_file)
+        ids = list(coco.imgToAnns.keys())  # 图片id列表
+        class_to_id = dict(zip(coco_class_names, range(COCO_CFG["num_classes"])))
+        class_to_coco_id = self._get_class_to_coco_id(coco.dataset["categories"])
+        self.coco_id_to_class_id = dict([
+            (class_to_coco_id[cls], class_to_id[cls])
+            for cls in coco_class_names
+        ])
+
+        return images_root, ids, coco
+
+    @staticmethod
+    def _get_class_to_coco_id(categories):
+        class_to_coco_id = dict()
+        for category in categories:
+            class_to_coco_id[category["name"]] = category["id"]
+        return class_to_coco_id
+
+    def _get_true_bbox(self, target):
+        bboxes = list()
+        for obj in target:
+            # (xmin, ymin, w, h)格式
+            bbox = obj["bbox"]
+            # 转为(xmin, ymin, xmax, ymax)格式
+            bbox[2] += bbox[0]
+            bbox[3] += bbox[1]
+            class_idx = self.coco_id_to_class_id[obj["category_id"]]
+            bboxes.append([*bbox, class_idx])
+        return bboxes
 
     def _parse_xml(self, xml):
         box_class_list = []
