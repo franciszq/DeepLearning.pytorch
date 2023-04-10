@@ -61,3 +61,11 @@ class CheckPoint:
             if scheduler is not None:
                 scheduler.load_state_dict(ckpt["scheduler"])
         del ckpt
+
+    @staticmethod
+    def load_pure(path, device, model):
+        ckpt = torch.load(path, map_location=device)
+        if "model" in ckpt.keys():
+            ckpt = ckpt["model"]
+        model.load_state_dict(ckpt)
+        del ckpt

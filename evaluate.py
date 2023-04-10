@@ -5,11 +5,11 @@ from registry import model_registry
 from lib.utils.ckpt import CheckPoint
 
 # 配置文件路径
-CONFIG = "configs/yolo7_cfg.py"
+CONFIG = "configs/ssd_cfg.py"
 # "voc" or "coco"
-DATASET = "coco"
-# 权重文件位置，注意加载权重时参数pure的设置
-WEIGHTS = "saves/yolov7_weights.pth"
+DATASET = "voc"
+# 权重文件位置
+WEIGHTS = "saves/SSD_voc_final.pth"
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     model.to(device)
 
     # 加载模型权重
-    CheckPoint.load(WEIGHTS, device, model, pure=True)
+    CheckPoint.load_pure(WEIGHTS, device, model)
     print(f"Loaded weights: {WEIGHTS}")
 
     if DATASET == "voc":

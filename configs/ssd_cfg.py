@@ -45,13 +45,13 @@ class Config:
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
-            self.epoch = 50
+            self.epoch = 100
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
-            self.milestones = [30, 40]
+            self.milestones = []
             self.gamma = 0.1
 
             # 是否使用预训练权重
@@ -99,4 +99,4 @@ class Config:
             self.test_results = "result"
             self.letterbox_image = True
             self.nms_threshold = 0.5
-            self.confidence_threshold = 0.3
+            self.confidence_threshold = 0.7

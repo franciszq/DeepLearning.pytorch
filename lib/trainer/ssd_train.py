@@ -33,8 +33,8 @@ class SsdTrainer(BaseTrainer):
     def load_data(self):
         train_dataset = DetectionDataset(dataset_name=self.dataset_name,
                                          input_shape=self.input_image_size[1:],
-                                         mosaic=True,
-                                         mosaic_prob=0.5,
+                                         mosaic=False,
+                                         mosaic_prob=0,
                                          epoch_length=self.total_epoch,
                                          special_aug_ratio=0.7,
                                          train=True)

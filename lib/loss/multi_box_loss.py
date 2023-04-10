@@ -89,7 +89,7 @@ class MultiBoxLossV2:
         self.negatives_for_hard = torch.FloatTensor([100])[0]
         self.num_classes = num_classes + 1
         self.background_label_id = 0
-        self.alpha = 1.0
+        self.alpha = 0.5
 
     @staticmethod
     def _l1_smooth_loss(y_true, y_pred):
@@ -188,5 +188,5 @@ class MultiBoxLossV2:
         loc_loss = torch.sum(pos_loc_loss) / torch.sum(num_pos)
         # total_loss = torch.sum(pos_conf_loss) + torch.sum(neg_conf_loss) + torch.sum(self.alpha * pos_loc_loss)
         # total_loss = total_loss / torch.sum(num_pos)
-        total_loss = conf_loss + loc_loss
+        total_loss = conf_loss * (1 - self.alpha) + loc_loss * self.alpha
         return total_loss, loc_loss, conf_loss
