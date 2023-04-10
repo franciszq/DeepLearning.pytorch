@@ -107,7 +107,8 @@ class BaseTrainer:
         self.model_algorithm = None
 
         self.metric_names = []
-        self.show_option = []
+        # 默认为True
+        self.show_option = [True for _ in range(len(self.metric_names))]
 
         self.set_model_algorithm()
         self.load_data()
