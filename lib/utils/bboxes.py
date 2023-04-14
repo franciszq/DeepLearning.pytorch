@@ -185,18 +185,22 @@ class Iou4:
         return iou
 
 
-def truncate_array(a, n, fill_value=-1):
+def truncate_array(a, n, use_padding=True, fill_value=-1):
     """
-    对多维数组a在dim=0上截断，使a的shape为[n, ...]
+    对多维数组a在dim=0上截断
     :param a:
     :param n:
+    :param use_padding: 是否将a的0维填充到n
     :param fill_value:  填充值，默认为-1
     :return:
     """
     if len(a) > n:
         return a[:n]
     else:
-        shape = a.shape
-        shape = (n,) + shape[1:]
-        a = np.concatenate((a, np.full(shape, fill_value, dtype=a.dtype)), axis=0)
-        return a
+        if use_padding:
+            shape = a.shape
+            shape = (n,) + shape[1:]
+            a = np.concatenate((a, np.full(shape, fill_value, dtype=a.dtype)), axis=0)
+            return a
+        else:
+            return a

@@ -56,7 +56,8 @@ class CombinedLoss:
         self.reg_loss_object = RegL1Loss()
         self.wh_loss_object = RegL1Loss()
 
-    def __call__(self, y_pred, heatmap_true, reg_true, wh_true, reg_mask, indices):
+    def __call__(self, y_pred, y_true):
+        heatmap_true, reg_true, wh_true, reg_mask, indices = y_true
         heatmap = y_pred[..., :self.num_classes]
         reg = y_pred[..., self.num_classes: self.num_classes + 2]
         wh = y_pred[..., -2:]

@@ -35,8 +35,6 @@ def gaussian2D(shape, sigma=1):
 
 
 def draw_umich_gaussian(heatmap, center, radius, k=1):
-    heatmap = heatmap.detach().cpu().numpy()
-    center = center.detach().cpu().numpy()
     diameter = 2 * radius + 1
     gaussian = gaussian2D((diameter, diameter), sigma=diameter / 6)
 
@@ -44,11 +42,16 @@ def draw_umich_gaussian(heatmap, center, radius, k=1):
 
     height, width = heatmap.shape[0:2]
 
+    # 对边界进行约束，防止越界
     left, right = min(x, radius), min(width - x, radius + 1)
     top, bottom = min(y, radius), min(height - y, radius + 1)
 
+    # 将高斯分布结果约束在边界内
     masked_heatmap = heatmap[y - top:y + bottom, x - left:x + right]
     masked_gaussian = gaussian[radius - top:radius + bottom, radius - left:radius + right]
+    # 将高斯分布覆盖到heatmap上，相当于不断的在heatmap基础上添加关键点的高斯，
+    # 即同一种类型的框会在一个heatmap某一个类别通道上面上面不断添加。
+    # 最终通过函数总体的for循环，相当于不断将目标画到heatmap
     if min(masked_gaussian.shape) > 0 and min(masked_heatmap.shape) > 0:
         np.maximum(masked_heatmap, masked_gaussian * k, out=masked_heatmap)
     return heatmap
