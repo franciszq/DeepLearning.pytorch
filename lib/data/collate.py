@@ -44,7 +44,7 @@ def centernet_collate(batch, centernet_algorithm):
         # gt_reg_mask.append(reg_mask)
         # gt_indices.append(indices)
     targets = [torch.stack(t, dim=0) for t in zip(*targets)]
-    # images = torch.stack(images, dim=0)
+    images = torch.stack(images, dim=0)
     # gt_heatmap = torch.stack(gt_heatmap, dim=0)
     # gt_reg = torch.stack(gt_reg, dim=0)
     # gt_wh = torch.stack(gt_wh, dim=0)

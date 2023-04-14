@@ -45,7 +45,7 @@ class CenterNetA:
         :param label: numpy.ndarray, shape: (N, 6(_, class_id, cx, cy, w, h))
         :return:
         """
-        class_label = label[:, 1]
+        class_label = label[:, 1:2]
         # 坐标由(cx, cy, w, h)转换为(xmin, ymin, xmax, ymax)
         coord_label = xywh_to_xyxy(label[:, 2:])
         # shape: (N, 5(xmin, ymin, xmax, ymax, class_id))

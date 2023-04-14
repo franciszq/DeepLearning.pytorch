@@ -41,15 +41,16 @@ class Config:
             self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
-            self.milestones = [40, 70]
+            self.milestones = []
             self.gamma = 0.1
 
             # 是否使用预训练权重
             self.pretrained = False
+            self.pretrained_weights = ""
             # 模型保存间隔
-            self.save_interval = 5
+            self.save_interval = 10
             # 每隔多少epoch在验证集上验证一次
-            self.eval_interval = 1
+            self.eval_interval = 0
             # 保存模型的文件夹
             self.save_path = "saves"
             # 是否启动tensorboard

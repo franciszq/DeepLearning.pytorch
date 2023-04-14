@@ -1,3 +1,4 @@
+from functools import partial
 import torch
 from typing import List
 
@@ -17,6 +18,7 @@ class CenterNetTrainer(BaseTrainer):
         self.device = device
         # 损失函数的返回值要与这里的metrics_name一一对应
         self.metric_names = ["loss"]
+        self.show_option = [True]
 
     def set_model_algorithm(self):
         self.model_algorithm = CenterNetA(self.cfg, self.device)
@@ -28,7 +30,7 @@ class CenterNetTrainer(BaseTrainer):
     def load_data(self):
         train_dataset = DetectionDataset(dataset_name=self.dataset_name,
                                          input_shape=self.input_image_size[1:],
-                                         mosaic=True,
+                                         mosaic=False,
                                          mosaic_prob=0.5,
                                          epoch_length=self.total_epoch,
                                          special_aug_ratio=0.7,
@@ -42,10 +44,12 @@ class CenterNetTrainer(BaseTrainer):
                                        train=False)
         self.train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size,
                                            shuffle=True, num_workers=self.num_workers,
-                                           drop_last=True, collate_fn=centernet_collate)
+                                           drop_last=True, collate_fn=partial(centernet_collate,
+                                                                              centernet_algorithm=self.model_algorithm))
         self.val_dataloader = DataLoader(val_dataset, batch_size=self.batch_size,
                                          shuffle=True, num_workers=self.num_workers,
-                                         drop_last=True, collate_fn=centernet_collate)
+                                         drop_last=True, collate_fn=partial(centernet_collate,
+                                                                            centernet_algorithm=self.model_algorithm))
 
     def set_optimizer(self):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
