@@ -63,20 +63,20 @@ class CenterNetTrainer(BaseTrainer):
 
     def train_loop(self, images, targets, scaler) -> List:
         images = images.to(device=self.device)
-        targets = targets.to(device=self.device)
+        targets = [target.to(device=self.device) for target in targets]
 
         self.optimizer.zero_grad()
         if self.mixed_precision:
             with torch.cuda.amp.autocast():
                 preds = self.model(images)
-                loss, box_loss, obj_loss, cls_loss = self.criterion(preds, targets, images)
+                loss = self.criterion(preds, targets)
             scaler.scale(loss).backward()
             scaler.step(self.optimizer)
             scaler.update()
         else:
             preds = self.model(images)
-            loss, box_loss, obj_loss, cls_loss = self.criterion(preds, targets, images)
+            loss = self.criterion(preds, targets)
             loss.backward()
             self.optimizer.step()
 
-        return [loss, box_loss, obj_loss, cls_loss]
+        return [loss]
