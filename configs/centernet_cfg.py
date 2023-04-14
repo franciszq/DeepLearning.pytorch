@@ -1,3 +1,5 @@
+from configs.dataset_cfg import VOC_CFG
+
 
 class Config:
     def __init__(self):
@@ -11,8 +13,6 @@ class Config:
 
     class _Arch:
         def __init__(self):
-            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = 20
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 384, 384)
             # "dla": 4
@@ -21,8 +21,10 @@ class Config:
     class _Dataset:
         # 数据集
         def __init__(self):
+            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
+            self.num_classes = VOC_CFG["num_classes"]
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = "voc"
+            self.dataset_name = VOC_CFG["name"]
 
     class _Train:
         # 训练参数
@@ -56,6 +58,7 @@ class Config:
             self.mixed_precision = True
             # 多少个子进程用于数据加载
             self.num_workers = 0
+            # 每张图片中最多的目标数目
             self.max_num_boxes = 30
 
     class _Loss:

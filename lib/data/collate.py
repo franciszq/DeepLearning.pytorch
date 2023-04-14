@@ -24,3 +24,27 @@ def ssd_collate(batch, ssd_algorithm):
     images = torch.stack(images, dim=0)
     targets = torch.stack(targets, dim=0)
     return images, targets
+
+
+def centernet_collate(batch, centernet_algorithm):
+    images = []
+    gt_heatmap = []
+    gt_reg = []
+    gt_wh = []
+    gt_reg_mask = []
+    gt_indices = []
+    for i, (image, target) in enumerate(batch):
+        images.append(image)
+        heatmap, reg, wh, reg_mask, indices = centernet_algorithm.generate_targets(target)
+        gt_heatmap.append(heatmap)
+        gt_reg.append(reg)
+        gt_wh.append(wh)
+        gt_reg_mask.append(reg_mask)
+        gt_indices.append(indices)
+    images = torch.stack(images, dim=0)
+    gt_heatmap = torch.stack(gt_heatmap, dim=0)
+    gt_reg = torch.stack(gt_reg, dim=0)
+    gt_wh = torch.stack(gt_wh, dim=0)
+    gt_reg_mask = torch.stack(gt_reg_mask, dim=0)
+    gt_indices = torch.stack(gt_indices, dim=0)
+    return images, gt_heatmap, gt_reg, gt_wh, gt_reg_mask, gt_indices

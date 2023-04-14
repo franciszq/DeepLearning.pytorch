@@ -183,3 +183,20 @@ class Iou4:
         union_area = self.box_1_area + self.box_2_area - intersect_area
         iou = intersect_area / (union_area + 1e-12)
         return iou
+
+
+def truncate_array(a, n, fill_value=-1):
+    """
+    对多维数组a在dim=0上截断，使a的shape为[n, ...]
+    :param a:
+    :param n:
+    :param fill_value:  填充值，默认为-1
+    :return:
+    """
+    if len(a) > n:
+        return a[:n]
+    else:
+        shape = a.shape
+        shape = (n,) + shape[1:]
+        a = np.concatenate((a, np.full(shape, fill_value, dtype=a.dtype)), axis=0)
+        return a

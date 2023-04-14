@@ -46,11 +46,11 @@ class RegL1Loss:
 
 
 class CombinedLoss:
-    def __init__(self, cfg: Config):
-        self.num_classes = cfg.arch.num_classes
-        self.hm_weight = cfg.loss.hm_weight
-        self.wh_weight = cfg.loss.wh_weight
-        self.off_weight = cfg.loss.off_weight
+    def __init__(self, num_classes, hm_weight, wh_weight, off_weight):
+        self.num_classes = num_classes
+        self.hm_weight = hm_weight
+        self.wh_weight = wh_weight
+        self.off_weight = off_weight
 
         self.heatmap_loss_object = FocalLoss()
         self.reg_loss_object = RegL1Loss()
@@ -64,4 +64,5 @@ class CombinedLoss:
         heatmap_loss = self.heatmap_loss_object(y_true=heatmap_true, y_pred=heatmap)
         off_loss = self.reg_loss_object(y_true=reg_true, y_pred=reg, mask=reg_mask, index=indices)
         wh_loss = self.wh_loss_object(y_true=wh_true, y_pred=wh, mask=reg_mask, index=indices)
-        return self.hm_weight * heatmap_loss + self.off_weight * off_loss + self.wh_weight * wh_loss
+        total_loss = self.hm_weight * heatmap_loss + self.off_weight * off_loss + self.wh_weight * wh_loss
+        return total_loss

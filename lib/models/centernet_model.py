@@ -365,7 +365,7 @@ class DLASeg(nn.Module):
 class CenterNet(nn.Module):
     def __init__(self, cfg: Config):
         super(CenterNet, self).__init__()
-        self.heads = {"heatmap": cfg.arch.num_classes, "wh": 2, "reg": 2}
+        self.heads = {"heatmap": cfg.dataset.num_classes, "wh": 2, "reg": 2}
         self.backbone = DLASeg(base_name="dla34", heads=self.heads)
 
     def forward(self, x):
@@ -377,13 +377,3 @@ class CenterNet(nn.Module):
         x = torch.cat(tensors=x, dim=1)
         x = torch.permute(x, dims=(0, 2, 3, 1))
         return x
-
-    def get_model_name(self):
-        return "dla34-centernet"
-
-
-if __name__ == '__main__':
-    sample = torch.randn(1, 3, 384, 384, dtype=torch.float32)
-    model = CenterNet(20)
-    y = model(sample)
-    print(y.size())
