@@ -1,8 +1,6 @@
 import torch
 import torch.nn.functional as F
 
-from configs.centernet_cfg import Config
-
 
 class FocalLoss:
     def __call__(self, y_true, y_pred):
