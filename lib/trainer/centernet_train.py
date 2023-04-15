@@ -1,8 +1,9 @@
 from functools import partial
 import torch
-from typing import List
+from typing import List, Dict
 
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from lib.algorithms.centernet import CenterNetA
 from lib.data.collate import centernet_collate
@@ -84,3 +85,21 @@ class CenterNetTrainer(BaseTrainer):
             self.optimizer.step()
 
         return [loss]
+
+    def evaluate_loop(self) -> Dict:
+        self.model.eval()
+        val_loss = 0
+        num_batches = len(self.val_dataloader)
+
+        with tqdm(self.val_dataloader, desc="Evaluate") as pbar:
+            with torch.no_grad():
+                for i, (images, targets) in enumerate(pbar):
+                    images = images.to(device=self.device)
+                    targets = [target.to(device=self.device) for target in targets]
+                    preds = self.model(images)
+                    loss_value = self.criterion(preds, targets)
+
+                    val_loss += loss_value.item()
+
+        val_loss /= num_batches
+        return {'val_loss': val_loss}
