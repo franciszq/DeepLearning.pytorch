@@ -2,10 +2,13 @@ import torch
 import numpy as np
 
 from configs.centernet_cfg import Config
-from lib.loss.centernet_loss import CombinedLoss
+from lib.loss.centernet_loss import CombinedLoss, RegL1Loss
 from lib.models import CenterNet
-from lib.utils.bboxes import xywh_to_xyxy, truncate_array
+from lib.utils.bboxes import xywh_to_xyxy, truncate_array, xywh_to_xyxy_torch
 from lib.utils.gaussian import gaussian_radius, draw_umich_gaussian
+from lib.utils.image_process import read_image_and_convert_to_tensor, read_image, reverse_letter_box
+from lib.utils.nms import diou_nms
+from lib.utils.visualize import show_detection_results
 
 
 class CenterNetA:
@@ -31,6 +34,13 @@ class CenterNetA:
         # 特征图的尺寸 [h, w]
         self.feature_size = [self.input_size[0] // self.downsampling_ratio,
                              self.input_size[1] // self.downsampling_ratio]
+
+        self.K = cfg.decode.max_boxes_per_img
+        self.conf_threshold = cfg.decode.score_threshold
+        self.nms_threshold = cfg.decode.nms_threshold
+        self.use_nms = cfg.decode.use_nms
+
+        self.letterbox_image = cfg.decode.letterbox_image
 
     def build_model(self):
         model = CenterNet(self.cfg)
@@ -85,3 +95,96 @@ class CenterNetA:
         # 返回torch.Tensor
         return torch.from_numpy(hm), torch.from_numpy(reg), torch.from_numpy(wh), torch.from_numpy(
             reg_mask), torch.from_numpy(ind)
+
+    def predict(self, model, image_path, print_on, save_result):
+        model.eval()
+        # 处理单张图片
+        image, h, w = read_image_and_convert_to_tensor(
+            image_path, size=self.cfg.arch.input_size[1:], letterbox=self.letterbox_image)
+        image = image.to(self.device)
+
+        with torch.no_grad():
+            preds = model(image)
+            boxes, scores, classes = self.decode_boxes(preds, h, w)
+
+        if boxes.shape[0] == 0:
+            print(f"No object detected")
+            return read_image(image_path, mode='bgr')
+
+        return show_detection_results(image_path=image_path,
+                                      dataset_name=self.cfg.dataset.dataset_name,
+                                      boxes=boxes,
+                                      scores=scores,
+                                      class_indices=classes,
+                                      print_on=print_on,
+                                      save_result=save_result,
+                                      save_dir=self.cfg.decode.test_results)
+
+    def decode_boxes(self, pred, h, w, conf_threshold=None):
+        if conf_threshold is None:
+            conf_threshold = self.conf_threshold
+        heatmap = pred[..., :self.num_classes]
+        reg = pred[..., self.num_classes: self.num_classes + 2]
+        wh = pred[..., -2:]
+        batch_size = heatmap.size(0)
+
+        heatmap = torch.sigmoid(heatmap)
+        heatmap = CenterNetA._suppress_redundant_centers(heatmap)
+        scores, inds, classes, ys, xs = CenterNetA._top_k(scores=heatmap, k=self.K)
+        if reg is not None:
+            reg = RegL1Loss.gather_feat(feat=reg, ind=inds)
+            xs = torch.reshape(xs, shape=(batch_size, self.K)) + reg[:, :, 0]  # shape: (batch_size, self.K)
+            ys = torch.reshape(ys, shape=(batch_size, self.K)) + reg[:, :, 1]
+        else:
+            xs = torch.reshape(xs, shape=(batch_size, self.K)) + 0.5
+            ys = torch.reshape(ys, shape=(batch_size, self.K)) + 0.5
+        wh = RegL1Loss.gather_feat(feat=wh, ind=inds)  # shape: (batch_size, self.K, 2)
+        classes = torch.reshape(classes, (batch_size, self.K))
+        scores = torch.reshape(scores, (batch_size, self.K))
+
+        bboxes = torch.cat(tensors=[xs.unsqueeze(-1), ys.unsqueeze(-1), wh], dim=-1)  # shape: (batch_size, self.K, 4)
+        bboxes[..., ::2] /= self.feature_size[1]
+        bboxes[..., 1::2] /= self.feature_size[0]
+        bboxes = torch.clamp(bboxes, min=0, max=1)
+        # (cx, cy, w, h) ----> (xmin, ymin, xmax, ymax)
+        bboxes = xywh_to_xyxy_torch(bboxes)
+
+        score_mask = scores >= conf_threshold  # shape: (batch_size, self.K)
+
+        bboxes = bboxes[score_mask]
+        scores = scores[score_mask]
+        classes = classes[score_mask]
+        if self.use_nms:
+            indices = diou_nms(boxes=bboxes, scores=scores, iou_threshold=self.nms_threshold)
+            bboxes, scores, classes = bboxes[indices], scores[indices], classes[indices]
+
+        boxes = reverse_letter_box(h=h, w=w, input_size=self.input_size, boxes=bboxes, xywh=False)
+        # 转化为numpy.ndarray
+        boxes = boxes.cpu().numpy()
+        scores = scores.cpu().numpy()
+        classes = classes.cpu().numpy()
+        return boxes, scores, classes
+
+    @staticmethod
+    def _suppress_redundant_centers(heatmap, pool_size=3):
+        """
+        消除8邻域内的其它峰值点
+        :param heatmap:
+        :param pool_size:
+        :return:
+        """
+        hmax = torch.nn.MaxPool2d(kernel_size=pool_size, stride=1, padding=((pool_size - 1) // 2))(heatmap)
+        keep = torch.eq(heatmap, hmax).to(torch.float32)
+        return heatmap * keep
+
+    @staticmethod
+    def _top_k(scores, k):
+        B, H, W, C = scores.size()
+        scores = torch.reshape(scores, shape=(B, -1))
+        topk_scores, topk_inds = torch.topk(input=scores, k=k, largest=True, sorted=True)
+        topk_clses = topk_inds % C  # 应该选取哪些通道（类别）
+        pixel = torch.div(topk_inds, C, rounding_mode="floor")
+        topk_ys = torch.div(pixel, W, rounding_mode="floor")  # 中心点的y坐标
+        topk_xs = pixel % W  # 中心点的x坐标
+        topk_inds = (topk_ys * W + topk_xs).to(torch.int32)
+        return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs

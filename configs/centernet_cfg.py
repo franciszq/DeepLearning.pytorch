@@ -31,11 +31,11 @@ class Config:
         def __init__(self):
             # 恢复训练时加载的checkpoint文件，""表示从epoch=0开始训练
             # 测试时也需要在这里指定checkpoint文件
-            self.resume_training = ""
+            self.resume_training = "saves/CenterNet_voc_epoch-99.pth"
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
-            self.last_epoch = -1
+            self.last_epoch = 99
 
-            self.epoch = 100
+            self.epoch = 300
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3
@@ -85,6 +85,9 @@ class Config:
     class _Decode:
         def __init__(self):
             self.test_results = "result"
+            # 一张图片最多输出的检测框数量
             self.max_boxes_per_img = 100
-            self.score_threshold = 0.6
+            self.letterbox_image = True
+            self.score_threshold = 0.5
             self.use_nms = True
+            self.nms_threshold = 0.5
