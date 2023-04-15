@@ -11,7 +11,7 @@ from lib.utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/centernet_cfg.py"
 # 权重文件位置
-WEIGHTS = "saves/CenterNet_voc_final.pth"
+WEIGHTS = "saves/CenterNet_voc_epoch-50.pth"
 # 输入文件类型：视频还是图片
 TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表

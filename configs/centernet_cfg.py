@@ -31,17 +31,17 @@ class Config:
         def __init__(self):
             # 恢复训练时加载的checkpoint文件，""表示从epoch=0开始训练
             # 测试时也需要在这里指定checkpoint文件
-            self.resume_training = "saves/CenterNet_voc_epoch-99.pth"
+            self.resume_training = ""
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
-            self.last_epoch = 99
+            self.last_epoch = -1
 
-            self.epoch = 300
+            self.epoch = 350
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
-            self.milestones = []
+            self.milestones = [300]
             self.gamma = 0.1
 
             # 是否使用预训练权重

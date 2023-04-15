@@ -8,7 +8,7 @@ from tqdm import tqdm
 from lib.algorithms.centernet import CenterNetA
 from lib.data.collate import centernet_collate
 from lib.data.detection_dataset import DetectionDataset
-from lib.trainer.base import BaseTrainer
+from lib.trainer.base import BaseTrainer, use_pretrained_model
 from lib.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 
 
@@ -24,6 +24,7 @@ class CenterNetTrainer(BaseTrainer):
     def set_model_algorithm(self):
         self.model_algorithm = CenterNetA(self.cfg, self.device)
 
+    @use_pretrained_model
     def initialize_model(self):
         self.model, self.model_name = self.model_algorithm.build_model()
         self.model.to(device=self.device)

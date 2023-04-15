@@ -119,7 +119,6 @@ class BaseTrainer:
     def set_model_algorithm(self):
         return None
 
-    @use_pretrained_model
     def initialize_model(self):
         pass
 
