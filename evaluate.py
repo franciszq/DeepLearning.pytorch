@@ -5,11 +5,11 @@ from registry import model_registry
 from lib.utils.ckpt import CheckPoint
 
 # 配置文件路径
-CONFIG = "configs/ssd_cfg.py"
+CONFIG = "configs/centernet_cfg.py"
 # "voc" or "coco"
 DATASET = "voc"
 # 权重文件位置
-WEIGHTS = "saves/SSD_voc_final.pth"
+WEIGHTS = "saves/CenterNet_voc_final.pth"
 
 
 def main():
