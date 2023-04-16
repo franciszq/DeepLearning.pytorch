@@ -11,15 +11,12 @@ import torchvision.transforms.functional as TF
 
 from configs.dataset_cfg import COCO_CFG, VOC_CFG
 from lib.utils.image_process import read_image, cv2_paste
-
-
-def get_random_number(a=0.0, b=1.0):
-    """生成[a,b)范围内的随机数"""
-    return np.random.rand() * (b - a) + a
+from lib.utils.useful_tools import get_random_number
 
 
 class DetectionDataset(Dataset):
-    def __init__(self, dataset_name, input_shape, mosaic, mosaic_prob, epoch_length, special_aug_ratio=0.7, train=True):
+    def __init__(self, dataset_name: str, input_shape, mosaic, mosaic_prob, epoch_length, special_aug_ratio=0.7,
+                 train=True):
         """
         :param dataset_name: 数据集名称, 'voc' or 'coco'
         :param input_shape: 输入图片大小, [h, w]
@@ -32,8 +29,8 @@ class DetectionDataset(Dataset):
         :param train: True表示训练集，False表示验证集
         """
         super().__init__()
-        assert dataset_name in ['voc', 'coco'], f"Unsupported dataset: {dataset_name}"
-        self.dataset_name = dataset_name
+        self.dataset_name = dataset_name.lower()
+        assert self.dataset_name in ['voc', 'coco'], f"Unsupported dataset: {self.dataset_name}"
         self.input_shape = input_shape
 
         self.jitter = 0.3
@@ -49,12 +46,16 @@ class DetectionDataset(Dataset):
         self.train = train
 
         if dataset_name == 'voc':
-            self.root, self.class_names, self.images, self.xml_paths, self.class2index = self._parse_voc(train)
+            self.voc_root, self.voc_class_names, self.voc_images, self.xml_paths, self.class2index = self._parse_voc(
+                train)
         else:
             self.coco_images_root, self.coco_ids, self.coco = self._get_coco(train)
 
     def __len__(self):
-        return len(self.images)
+        if self.dataset_name == "voc":
+            return len(self.voc_images)
+        elif self.dataset_name == "coco":
+            return len(self.coco_ids)
 
     def __getitem__(self, item):
         if self.dataset_name == 'voc':
@@ -63,7 +64,7 @@ class DetectionDataset(Dataset):
                 image, box = self.mosaic_for_voc(item)
             else:
                 # 使用opencv读取图片
-                image_path = self.images[item]
+                image_path = self.voc_images[item]
                 image = read_image(image_path)
 
                 # 解析xml
@@ -90,7 +91,7 @@ class DetectionDataset(Dataset):
                 # 读取图片
                 image = read_image(image_path)
                 # 解析标注
-                target = self._get_true_bbox(target)
+                target = self._get_coco_bbox(target)
                 target = np.array(target, dtype=np.float32)
                 target = np.reshape(target, (-1, 5))
 
@@ -289,9 +290,9 @@ class DetectionDataset(Dataset):
 
     def mosaic_for_voc(self, item):
         # 从VOC2012中随机获取3个数据
-        random_selected_items = sample(self.images, 3)
+        random_selected_items = sample(self.voc_images, 3)
         # 加入当前item，一共是4张图片
-        random_selected_items.append(self.images[item])
+        random_selected_items.append(self.voc_images[item])
         # 打乱顺序
         shuffle(random_selected_items)
         # 网络输入图片的高、宽
@@ -341,6 +342,9 @@ class DetectionDataset(Dataset):
         new_boxes = self.merge_bboxes(box_datas, cutx, cuty)
 
         return new_image, new_boxes
+
+    def mosaic_for_coco(self, item):
+        pass
 
     def merge_bboxes(self, bboxes, cutx, cuty):
         merge_bbox = []
@@ -437,7 +441,7 @@ class DetectionDataset(Dataset):
             class_to_coco_id[category["name"]] = category["id"]
         return class_to_coco_id
 
-    def _get_true_bbox(self, target):
+    def _get_coco_bbox(self, target):
         bboxes = list()
         for obj in target:
             # (xmin, ymin, w, h)格式
@@ -470,6 +474,3 @@ class DetectionDataset(Dataset):
             box_class_list.append(o_list)
         # [[xmin, ymin, xmax, ymax, class_index], ...]
         return box_class_list
-
-    def _parse_coco(self):
-        pass

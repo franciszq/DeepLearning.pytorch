@@ -75,3 +75,4 @@ pip install -r requirements.txt
 - https://github.com/bubbliiiing/ssd-pytorch
 - https://github.com/Megvii-BaseDetection/YOLOX
 - https://github.com/bubbliiiing/yolov7-pytorch
+- https://github.com/ultralytics/ultralytics
