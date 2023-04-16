@@ -9,7 +9,7 @@ CONFIG = "configs/centernet_cfg.py"
 # "voc" or "coco"
 DATASET = "voc"
 # 权重文件位置
-WEIGHTS = "saves/CenterNet_voc_epoch-50.pth"
+WEIGHTS = "saves/CenterNet_voc_weights.pth"
 
 
 def main():
