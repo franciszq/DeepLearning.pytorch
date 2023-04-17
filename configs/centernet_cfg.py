@@ -1,4 +1,4 @@
-from configs.dataset_cfg import VOC_CFG
+from configs.dataset_cfg import VOC_CFG, COCO_CFG
 
 
 class Config:
@@ -22,9 +22,9 @@ class Config:
         # 数据集
         def __init__(self):
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = VOC_CFG["num_classes"]
+            self.num_classes = COCO_CFG["num_classes"]
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = VOC_CFG["name"]
+            self.dataset_name = COCO_CFG["name"]
 
     class _Train:
         # 训练参数
@@ -35,20 +35,20 @@ class Config:
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
-            self.epoch = 350
+            self.epoch = 30
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
             self.warmup_epochs = 0
-            self.milestones = [300]
+            self.milestones = []
             self.gamma = 0.1
 
             # 是否使用预训练权重
             self.pretrained = False
             self.pretrained_weights = ""
             # 模型保存间隔
-            self.save_interval = 10
+            self.save_interval = 1
             # 每隔多少epoch在验证集上验证一次
             self.eval_interval = 0
             # 保存模型的文件夹
@@ -88,6 +88,6 @@ class Config:
             # 一张图片最多输出的检测框数量
             self.max_boxes_per_img = 100
             self.letterbox_image = True
-            self.score_threshold = 0.5
+            self.score_threshold = 0.1
             self.use_nms = True
             self.nms_threshold = 0.5

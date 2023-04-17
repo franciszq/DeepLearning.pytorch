@@ -7,9 +7,9 @@ from lib.utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/centernet_cfg.py"
 # "voc" or "coco"
-DATASET = "voc"
+DATASET = "coco"
 # 权重文件位置
-WEIGHTS = "saves/CenterNet_voc_weights.pth"
+WEIGHTS = "saves/CenterNet_coco_weights.pth"
 
 
 def main():

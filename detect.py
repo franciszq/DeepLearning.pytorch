@@ -11,11 +11,11 @@ from lib.utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/centernet_cfg.py"
 # 权重文件位置
-WEIGHTS = "saves/CenterNet_voc_weights.pth"
+WEIGHTS = "saves/CenterNet_coco_weights.pth"
 # 输入文件类型：视频还是图片
 TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg"]
+IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg", "test/000000000049.jpg"]
 # 原视频路径
 SRC_VIDEO = "test/1.flv"
 # 目标视频路径
