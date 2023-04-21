@@ -5,3 +5,4 @@ tqdm
 pycocotools
 matplotlib
 PyYAML
+ultralytics

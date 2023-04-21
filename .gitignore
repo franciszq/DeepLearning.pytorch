@@ -6,4 +6,4 @@ test/
 saves/
 result/
 frames/
-test_ssd_model.py
+test_yolo8.py

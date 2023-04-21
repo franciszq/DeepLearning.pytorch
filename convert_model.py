@@ -1,6 +1,7 @@
 import copy
 import os
 import torch
+from ultralytics.nn.tasks import attempt_load_one_weight
 
 from registry import model_registry
 
@@ -42,8 +43,26 @@ class CheckPointModel:
         print(f"Successfully saved weights to {filepath}")
 
 
+def extract_weights_from_ultralytics_model(filepath):
+    """
+    提取ultralytics模型的权重文件
+    :param filepath: ultralytics模型的文件路径
+    """
+    # 提取文件名
+    filename = os.path.basename(filepath)
+    # 提取文件名前缀
+    prefix = filename.split(".")[0]
+    # 文件名后缀
+    suffix = "pth"
+    model, ckpt = attempt_load_one_weight(filepath)
+    csd = model.float().state_dict()
+    # 保存为权重文件
+    torch.save(csd, f"saves/ultralytics/{prefix}_weights.{suffix}")
+
+
 if __name__ == '__main__':
-    ckpt_model = CheckPointModel(cfg_path="configs/centernet_cfg.py",
-                                 checkpoint_path="saves/CenterNet_coco_epoch-15.pth",
-                                 device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-    ckpt_model.save_as_weights("saves/CenterNet_coco_weights.pth")
+    # ckpt_model = CheckPointModel(cfg_path="configs/centernet_cfg.py",
+    #                              checkpoint_path="saves/CenterNet_coco_epoch-15.pth",
+    #                              device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    # ckpt_model.save_as_weights("saves/CenterNet_coco_weights.pth")
+    extract_weights_from_ultralytics_model(filepath="saves/ultralytics/yolov8n.pt")
