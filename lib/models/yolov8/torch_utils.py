@@ -9,6 +9,7 @@ import torchvision
 
 def initialize_weights(model):
     """Initialize model weights to random values."""
+    print("初始化模型参数...")
     for m in model.modules():
         t = type(m)
         if t is nn.Conv2d:
