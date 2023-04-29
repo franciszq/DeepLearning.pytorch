@@ -159,6 +159,15 @@ def cv2_paste(img1, img2, x, y):
 
 
 def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_image):
+    """
+
+    :param box_xy:
+    :param box_wh:
+    :param input_shape: 网络的固定输入图片尺寸
+    :param image_shape: 真实的输入图片大小
+    :param letterbox_image:
+    :return:
+    """
     box_xywh = np.concatenate([box_xy, box_wh], axis=-1)
     if letterbox_image:
         return reverse_letter_box_numpy(image_shape, input_shape,

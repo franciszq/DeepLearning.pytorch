@@ -233,6 +233,7 @@ class YOLOv7:
         :param preds: 预测结果
         :param image_h: 图片高度
         :param image_w: 图片宽度
+        :param conf_threshold: 置信度
         :return: 解码后的预测结果
         """
         if conf_threshold is None:

@@ -10,7 +10,7 @@ from lib.models.yolov8.modules import (C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, 
                                        Ensemble, Focus, GhostBottleneck, GhostConv, Pose, Segment)
 from lib.models.yolov8.torch_utils import initialize_weights
 from lib.utils.show import colorstr
-from lib.utils.useful_tools import make_divisible
+from lib.utils.ultralytics_ops import make_divisible
 
 
 class Yolo8(nn.Module):
@@ -25,10 +25,10 @@ class Yolo8(nn.Module):
         self.num_classes = num_classes
         layers = [
             # backbone
-            Conv(c1=ch, c2=self._ac(64), k=3, s=2), # 0
+            Conv(c1=ch, c2=self._ac(64), k=3, s=2),  # 0
             Conv(c1=self._ac(64), c2=self._ac(128), k=3, s=2),  # 1
             C2f(c1=self._ac(128), c2=self._ac(128), n=self._get_n(3), shortcut=True),
-            Conv(c1=self._ac(128), c2=self._ac(256), k=3, s=2), # 3
+            Conv(c1=self._ac(128), c2=self._ac(256), k=3, s=2),  # 3
             C2f(c1=self._ac(256), c2=self._ac(256), n=self._get_n(6), shortcut=True),
             Conv(c1=self._ac(256), c2=self._ac(512), k=3, s=2),  # 5
             C2f(c1=self._ac(512), c2=self._ac(512), n=self._get_n(6), shortcut=True),
@@ -79,8 +79,11 @@ class Yolo8(nn.Module):
         """
         Perform a forward pass through the network.
         :param x:  The input tensor to the model
-        :return:  list of torch.Tensor,
+        :return:
+        如果YOLOv8在train模式下，那么输出是list of torch.Tensor,
         [torch.Size([bs, nc + 16*4, 80, 80]), torch.Size([bs, nc + 16*4, 40, 40]), torch.Size([bs, nc + 16*4, 20, 20])]
+        如果YOLOv8在eval模式下，输出是一个元组，包含两部分，第一部分是一个Tensor, shape是[bs, nc + 4, 8400(80*80+40*40+20*20)]
+        第二部分就是train模式下的输出
         """
         saved_layer_outputs = {}
         for i, m in enumerate(self.model):

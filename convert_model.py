@@ -65,4 +65,4 @@ if __name__ == '__main__':
     #                              checkpoint_path="saves/CenterNet_coco_epoch-15.pth",
     #                              device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
     # ckpt_model.save_as_weights("saves/CenterNet_coco_weights.pth")
-    extract_weights_from_ultralytics_model(filepath="saves/ultralytics/yolov8n.pt")
+    extract_weights_from_ultralytics_model(filepath="saves/ultralytics/yolov8x.pt")

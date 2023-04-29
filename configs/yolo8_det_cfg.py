@@ -1,3 +1,5 @@
+from configs.dataset_cfg import VOC_CFG, COCO_CFG
+
 
 class Config:
     def __init__(self):
@@ -11,19 +13,18 @@ class Config:
 
     class _Arch:
         def __init__(self):
-            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = 20
+            # YOLOv8的模型种类：n, s, m, l, x
+            self.model_type = "m"
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 640, 640)
-            self.depth = 1.00
-            self.width = 1.00
-            self.act = "silu"
 
     class _Dataset:
         # 数据集
         def __init__(self):
+            # 目标类别数，与数据集有关，对于voc是20，对于coco是80
+            self.num_classes = COCO_CFG["num_classes"]
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = "voc"
+            self.dataset_name = COCO_CFG["name"]
 
     class _Train:
         # 训练参数
@@ -35,7 +36,7 @@ class Config:
             self.last_epoch = -1
 
             self.epoch = 100
-            self.batch_size = 8
+            self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
@@ -45,10 +46,11 @@ class Config:
 
             # 是否使用预训练权重
             self.pretrained = False
+            self.pretrained_weights = ""
             # 模型保存间隔
-            self.save_interval = 5
+            self.save_interval = 1
             # 每隔多少epoch在验证集上验证一次
-            self.eval_interval = 1
+            self.eval_interval = 0
             # 保存模型的文件夹
             self.save_path = "saves"
             # 是否启动tensorboard
@@ -57,18 +59,20 @@ class Config:
             self.mixed_precision = True
             # 多少个子进程用于数据加载
             self.num_workers = 0
+            # 每张图片中最多的目标数目
             self.max_num_boxes = 30
 
     class _Loss:
         # 损失函数
         def __init__(self):
-            self.ignore_threshold = 0.5
+            self.hm_weight = 1.0
+            self.wh_weight = 0.1
+            self.off_weight = 1.0
 
     class _Optimizer:
         # 优化器
         def __init__(self):
             self.name = "Adam"
-            self.scheduler_name = "None"
 
     class _Log:
         # 训练日志
@@ -81,5 +85,8 @@ class Config:
     class _Decode:
         def __init__(self):
             self.test_results = "result"
-            self.conf_threshold = 0.5
-            self.nms_threshold = 0.65
+            self.letterbox_image = True
+            self.conf_threshold = 0.25
+            self.nms_threshold = 0.7
+            # 单张图片上检测框的最大数量
+            self.max_det = 300
