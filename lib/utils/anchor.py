@@ -124,7 +124,14 @@ def get_yolo7_anchors(cfg):
 
 
 def make_anchors(feats, strides, grid_cell_offset=0.5):
-    """Generate anchors from features."""
+    """
+    生成YOLOv8的anchor
+    :param feats:
+    :param strides:
+    :param grid_cell_offset:
+    :return:
+    """
+
     anchor_points, stride_tensor = [], []
     assert feats is not None
     dtype, device = feats[0].dtype, feats[0].device

@@ -7,11 +7,26 @@ def yolo7_collate(batch):
     bboxes = []
     for i, (img, box) in enumerate(batch):
         images.append(img)
-        box[:, 0] = i   # 图片在这个batch中的编号
+        box[:, 0] = i  # 图片在这个batch中的编号
         bboxes.append(box)
     images = torch.stack(images, dim=0)
     bboxes = torch.from_numpy(np.concatenate(bboxes, 0)).type(torch.FloatTensor)
     return images, bboxes
+
+
+def yolo8_collate(batch):
+    """YOLOv8 collate function, outputs dict."""
+    im, label = zip(*batch)  # transposed
+    label = [torch.from_numpy(e).to(torch.float32) for e in label]
+    for i, lb in enumerate(label):
+        lb[:, 0] = i  # add target image index for build_targets()
+    batch_idx, cls, bboxes = torch.cat(label, 0).split((1, 1, 4), dim=1)
+    images = torch.stack(im, 0)
+    return images, {
+        'cls': cls,
+        'bboxes': bboxes,
+        'batch_idx': batch_idx.view(-1)
+    }
 
 
 def ssd_collate(batch, ssd_algorithm):

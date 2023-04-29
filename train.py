@@ -5,7 +5,7 @@ from registry import model_registry
 
 
 # 配置文件路径
-CONFIG = "configs/centernet_cfg.py"
+CONFIG = "configs/yolo8_det_cfg.py"
 
 
 def main():

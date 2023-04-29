@@ -36,7 +36,7 @@ class Config:
             self.last_epoch = -1
 
             self.epoch = 100
-            self.batch_size = 16
+            self.batch_size = 8
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
@@ -59,15 +59,13 @@ class Config:
             self.mixed_precision = True
             # 多少个子进程用于数据加载
             self.num_workers = 0
-            # 每张图片中最多的目标数目
-            self.max_num_boxes = 30
 
     class _Loss:
         # 损失函数
         def __init__(self):
-            self.hm_weight = 1.0
-            self.wh_weight = 0.1
-            self.off_weight = 1.0
+            self.box = 7.5
+            self.cls = 0.5
+            self.dfl = 1.5
 
     class _Optimizer:
         # 优化器
