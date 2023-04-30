@@ -6,4 +6,5 @@ test/
 saves/
 result/
 frames/
+log/
 test_yolo8.py

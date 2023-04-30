@@ -31,11 +31,11 @@ class Config:
         def __init__(self):
             # 恢复训练时加载的checkpoint文件，""表示从epoch=0开始训练
             # 测试时也需要在这里指定checkpoint文件
-            self.resume_training = ""
+            self.resume_training = "saves/YOLOv8n_voc_epoch-99.pth"
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
-            self.last_epoch = -1
+            self.last_epoch = 99
 
-            self.epoch = 100
+            self.epoch = 200
             self.batch_size = 8
             # 初始学习率
             self.initial_lr = 1e-3
@@ -76,7 +76,7 @@ class Config:
         # 训练日志
         def __init__(self):
             # 日志文件保存文件夹
-            self.root = "out"
+            self.root = "log"
             # 日志文件输出间隔
             self.print_interval = 50
 

@@ -1,5 +1,6 @@
 import os
 import traceback
+import logging
 from pathlib import Path
 from typing import List, Dict
 
@@ -8,6 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from lib.utils.ckpt import CheckPoint
+from lib.utils.useful_tools import get_format_filename, get_current_format_time, pbar_postfix_to_msg
 
 
 # 装饰器，用于给模型添加预训练权重
@@ -48,6 +50,7 @@ class DetectionTrainer:
     def __init__(self, cfg, device):
         self.device = device
         self.cfg = cfg
+
         # 模型总的训练轮数
         self.total_epoch = cfg.train.epoch
         # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
@@ -115,6 +118,22 @@ class DetectionTrainer:
         self.set_lr_scheduler()
         self.set_criterion()
 
+        # 日志系统
+        self.train_logger = logging.getLogger("TRAIN")
+        train_logger_file = os.path.join(cfg.log.root, get_format_filename(model_name=self.model_name,
+                                                                           dataset_name=self.dataset_name,
+                                                                           addition=get_current_format_time() + ".log"))
+        if not os.path.exists(cfg.log.root):
+            os.makedirs(cfg.log.root)
+        handler = logging.FileHandler(filename=train_logger_file, encoding="utf-8")
+        self.train_logger.setLevel(logging.INFO)
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+        handler.setFormatter(formatter)
+        self.train_logger.addHandler(handler)
+
+        self.log_print_interval = cfg.log.print_interval
+
     def set_model_algorithm(self):
         return None
 
@@ -168,6 +187,22 @@ class DetectionTrainer:
         else:
             scaler = None
 
+        # 打印训练超参数信息
+        self.train_logger.info(
+            msg=f"\n模型: {self.model_name}\n"
+                f"数据集: {self.dataset_name}\n"
+                f"batch_size: {self.batch_size}\n"
+                f"训练总epoch: {self.total_epoch}\n"
+                f"起始epoch: {self.last_epoch+1}\n"
+                f"优化器: {self.optimizer_name}\n"
+                f"初始学习率: {self.initial_lr}\n"
+                f"输入图片尺寸: {self.input_image_size[1]}x{self.input_image_size[2]}"
+        )
+        # 打印模型网络结构
+        self.train_logger.info(
+            msg=f"网络结构: \n{self.model}"
+        )
+
         for epoch in range(self.last_epoch + 1, self.total_epoch):
             # 切换为训练模式
             self.model.train()
@@ -207,11 +242,19 @@ class DetectionTrainer:
                                 p]] = f"{(train_metrics[p].result()):.5f}"
                     pbar.set_postfix(postfix_info)
 
+                    # 打印日志信息
+                    if i % self.log_print_interval == 0:
+                        self.train_logger.info(
+                            msg=f"Epoch: {epoch}/{self.total_epoch}, step: {i}/{len(self.train_dataloader)}, "
+                                f"{pbar_postfix_to_msg(postfix_info)}")
+
             self.lr_scheduler.step()
 
             if self.eval_interval != 0 and epoch % self.eval_interval == 0:
                 evaluation = self.evaluate_loop()
                 print([f"{k}={v:.5f}" for k, v in evaluation.items()])
+                self.train_logger.info(
+                    msg=f"===========Evaluate after epoch-{epoch}============\n {pbar_postfix_to_msg(evaluation, False)}")
 
             if epoch % self.save_interval == 0 or epoch == self.total_epoch - 1:
                 CheckPoint.save(
@@ -231,6 +274,3 @@ class DetectionTrainer:
 
     def evaluate_loop(self) -> Dict:
         return {}
-
-
-
