@@ -1,5 +1,5 @@
-# Detection.pytorch
-部分目标检测算法的pytorch实现
+# DeepLearning.pytorch
+深度学习算法
 
 [English](https://github.com/calmisential/Detection.pytorch/blob/main/README_EN.md)
 ## 安装
