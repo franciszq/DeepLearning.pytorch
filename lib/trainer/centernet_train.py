@@ -10,6 +10,7 @@ from lib.data.collate import centernet_collate
 from lib.data.detection_dataset import DetectionDataset
 from lib.trainer.base import DetectionTrainer, use_pretrained_model
 from lib.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
+from lib.utils.useful_tools import move_to_device
 
 
 class CenterNetTrainer(DetectionTrainer):
@@ -67,9 +68,9 @@ class CenterNetTrainer(DetectionTrainer):
     def set_criterion(self):
         self.criterion = self.model_algorithm.build_loss()
 
-    def train_loop(self, images, targets, scaler) -> List:
-        images = images.to(device=self.device)
-        targets = [target.to(device=self.device) for target in targets]
+    def train_loop(self, batch_data, scaler) -> List:
+        images = move_to_device(batch_data[0], self.device)
+        targets = move_to_device(batch_data[1], self.device)
 
         self.optimizer.zero_grad()
         if self.mixed_precision:

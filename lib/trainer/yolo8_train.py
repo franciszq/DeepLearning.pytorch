@@ -65,9 +65,9 @@ class Yolo8Trainer(DetectionTrainer):
     def set_criterion(self):
         self.criterion = self.model_algorithm.build_loss(model=self.model)
 
-    def train_loop(self, images, targets, scaler) -> List:
-        images = move_to_device(images, self.device)
-        targets = move_to_device(targets, self.device)
+    def train_loop(self, batch_data, scaler) -> List:
+        images = move_to_device(batch_data[0], self.device)
+        targets = move_to_device(batch_data[1], self.device)
 
         self.optimizer.zero_grad()
         if self.mixed_precision:

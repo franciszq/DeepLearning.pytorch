@@ -152,7 +152,7 @@ class DetectionTrainer:
     def set_criterion(self):
         pass
 
-    def train_loop(self, images, targets, scaler) -> List:
+    def train_loop(self, batch_data, scaler) -> List:
         return []
 
     def train(self):
@@ -214,8 +214,10 @@ class DetectionTrainer:
 
             with tqdm(self.train_dataloader,
                       desc=f"Epoch-{epoch}/{self.total_epoch}") as pbar:
-                for i, (images, targets) in enumerate(pbar):
-                    metrics = self.train_loop(images, targets, scaler)
+                # for i, (images, targets) in enumerate(pbar):
+                #     metrics = self.train_loop(images, targets, scaler)
+                for i, batch_data in enumerate(pbar):
+                    metrics = self.train_loop(batch_data, scaler)
                     assert len(metrics) == n
                     for j in range(n):
                         train_metrics[j].update(metrics[j].item())
