@@ -8,11 +8,11 @@ from lib.algorithms.yolo_v7 import YOLOv7
 from lib.data.collate import yolo7_collate
 from lib.data.detection_dataset import DetectionDataset
 # from models.yolov7_model import Yolo7
-from lib.trainer.base import BaseTrainer
+from lib.trainer.base import DetectionTrainer
 from lib.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 
 
-class Yolo7Trainer(BaseTrainer):
+class Yolo7Trainer(DetectionTrainer):
     def __init__(self, cfg, device):
         super().__init__(cfg, device)
         self.cfg = cfg

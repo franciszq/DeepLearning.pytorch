@@ -6,13 +6,13 @@ from tqdm import tqdm
 from lib.algorithms.ssd import Ssd
 from lib.data.collate import ssd_collate
 from lib.data.detection_dataset import DetectionDataset
-from lib.trainer.base import BaseTrainer
+from lib.trainer.base import DetectionTrainer
 from torch.utils.data import DataLoader
 
 from lib.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 
 
-class SsdTrainer(BaseTrainer):
+class SsdTrainer(DetectionTrainer):
 
     def __init__(self, cfg, device):
         super().__init__(cfg, device)

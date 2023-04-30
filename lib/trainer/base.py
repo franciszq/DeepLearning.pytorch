@@ -1,6 +1,5 @@
 import os
 import traceback
-from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import List, Dict
 
@@ -44,7 +43,7 @@ class MeanMetric:
         self.__init__()
 
 
-class BaseTrainer:
+class DetectionTrainer:
 
     def __init__(self, cfg, device):
         self.device = device
@@ -234,24 +233,4 @@ class BaseTrainer:
         return {}
 
 
-class Pipeline(metaclass=ABCMeta):
 
-    @abstractmethod
-    def _load_data(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def _initialize_model(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def load_weights(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def train(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def evaluate(self, *args, **kwargs):
-        pass

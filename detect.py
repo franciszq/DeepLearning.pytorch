@@ -11,7 +11,7 @@ from lib.utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/yolo8_det_cfg.py"
 # 权重文件位置
-WEIGHTS = "saves/ultralytics/yolov8m_weights.pth"
+WEIGHTS = "saves/YOLOv8n_voc_final.pth"
 # 输入文件类型：视频还是图片
 TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表

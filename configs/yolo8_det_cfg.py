@@ -14,7 +14,7 @@ class Config:
     class _Arch:
         def __init__(self):
             # YOLOv8的模型种类：n, s, m, l, x
-            self.model_type = "m"
+            self.model_type = "n"
             # 输入图片大小：(C, H, W)
             self.input_size = (3, 640, 640)
 
@@ -22,9 +22,9 @@ class Config:
         # 数据集
         def __init__(self):
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = COCO_CFG["num_classes"]
+            self.num_classes = VOC_CFG["num_classes"]
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = COCO_CFG["name"]
+            self.dataset_name = VOC_CFG["name"]
 
     class _Train:
         # 训练参数
@@ -48,7 +48,7 @@ class Config:
             self.pretrained = False
             self.pretrained_weights = ""
             # 模型保存间隔
-            self.save_interval = 1
+            self.save_interval = 10
             # 每隔多少epoch在验证集上验证一次
             self.eval_interval = 0
             # 保存模型的文件夹
