@@ -2,10 +2,10 @@ import torch
 
 import numpy as np
 
-from lib.data import transforms as T
+from core.data import transforms as T
 
 from tqdm import tqdm
-from lib.data.voc import Voc
+from core.data.voc import Voc
 from torch.utils.data import DataLoader
 
 # 配置文件

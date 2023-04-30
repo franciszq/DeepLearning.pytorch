@@ -90,7 +90,7 @@ class Config:
         # 训练日志
         def __init__(self):
             # 日志文件保存文件夹
-            self.root = "out"
+            self.root = "log"
             # 日志文件输出间隔
             self.print_interval = 50
 

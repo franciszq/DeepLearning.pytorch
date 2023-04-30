@@ -2,7 +2,7 @@ import os
 
 import torch
 from registry import model_registry
-from lib.utils.ckpt import CheckPoint
+from core.utils.ckpt import CheckPoint
 
 # 配置文件路径
 CONFIG = "configs/centernet_cfg.py"

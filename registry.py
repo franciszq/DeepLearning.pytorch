@@ -1,11 +1,11 @@
-from lib.algorithms.centernet import CenterNetA
-from lib.algorithms.yolo_v7 import YOLOv7
-from lib.algorithms.ssd import Ssd
+from core.algorithms.centernet import CenterNetA
+from core.algorithms.yolo_v7 import YOLOv7
+from core.algorithms.ssd import Ssd
 
 from configs import yolo7_cfg, ssd_cfg, centernet_cfg, yolo8_det_cfg
-from lib.algorithms.yolo_v8 import YOLOv8
-from lib.trainer import Yolo7Trainer, SsdTrainer, CenterNetTrainer
-from lib.trainer.yolo8_train import Yolo8Trainer
+from core.algorithms.yolo_v8 import YOLOv8
+from core.trainer import Yolo7Trainer, SsdTrainer, CenterNetTrainer
+from core.trainer.yolo8_train import Yolo8Trainer
 
 # 模型注册表
 # key：配置文件
