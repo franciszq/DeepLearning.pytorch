@@ -80,7 +80,7 @@ class DetectionDataset(Dataset):
             if self.mosaic and get_random_number() < self.mosaic_prob and \
                     self.epoch_now < self.epoch_length * self.special_aug_ratio:
                 # TODO mosaic for coco
-                raise NotImplementedError("Mosaic for coco is not implemented yet.")
+                image, box = self.mosaic_for_coco(item)
             else:
                 img_id = self.coco_ids[item]
                 ann_ids = self.coco.getAnnIds(imgIds=img_id)
@@ -289,10 +289,11 @@ class DetectionDataset(Dataset):
         return image_data, box_data
 
     def mosaic_for_voc(self, item):
+        voc_ids = range(len(self.voc_images))
         # 从VOC2012中随机获取3个数据
-        random_selected_items = sample(self.voc_images, 3)
+        random_selected_items = sample(voc_ids, 3)
         # 加入当前item，一共是4张图片
-        random_selected_items.append(self.voc_images[item])
+        random_selected_items.append(item)
         # 打乱顺序
         shuffle(random_selected_items)
         # 网络输入图片的高、宽
@@ -303,12 +304,12 @@ class DetectionDataset(Dataset):
         box_datas = []
         index = 0
 
-        for image_path in random_selected_items:
+        for image_id in random_selected_items:
             # 将图片读取为numpy.ndarray格式
-            image = read_image(image_path)
+            image = read_image(self.voc_images[image_id])
 
             # 获取此图片对对应的box
-            box = self._parse_xml(self.xml_paths[item])
+            box = self._parse_xml(self.xml_paths[image_id])
             box = np.array(box, dtype=np.float32)
             box = np.reshape(box, (-1, 5))  # shape: (N, 5)  N是这张图片包含的目标数
 
@@ -344,7 +345,62 @@ class DetectionDataset(Dataset):
         return new_image, new_boxes
 
     def mosaic_for_coco(self, item):
-        pass
+        # 从COCO中随机获取3个数据
+        random_selected_items = sample(self.coco_ids, 3)
+        # 加入当前item，一共是4张图片
+        random_selected_items.append(self.coco_ids[item])
+        # 打乱顺序
+        shuffle(random_selected_items)
+        # 网络输入图片的高、宽
+        h, w = self.input_shape
+        min_offset_x = get_random_number(0.3, 0.7)
+        min_offset_y = get_random_number(0.3, 0.7)
+        image_datas = []
+        box_datas = []
+        index = 0
+
+        for img_id in random_selected_items:
+            image_path = os.path.join(self.coco_images_root, self.coco.loadImgs(img_id)[0]['file_name'])
+            # 将图片读取为numpy.ndarray格式
+            image = read_image(image_path)
+
+            # 获取此图片对对应的box
+            ann_ids = self.coco.getAnnIds(imgIds=img_id)
+            target = self.coco.loadAnns(ann_ids)
+            box = self._get_coco_bbox(target)
+            box = np.array(box, dtype=np.float32)
+            box = np.reshape(box, (-1, 5))   # shape: (N, 5)  N是这张图片包含的目标数
+
+            image_data, box_data = self.mosaic_body(image, box, h, w, index, min_offset_x, min_offset_y)
+            index += 1
+            image_datas.append(image_data)
+            box_datas.append(box_data)
+
+        # 将4张图片放在一起
+        cutx = int(w * min_offset_x)
+        cuty = int(h * min_offset_y)
+        new_image = np.zeros(shape=[h, w, 3], dtype=np.uint8)
+        new_image[:cuty, :cutx, :] = image_datas[0][:cuty, :cutx, :]
+        new_image[cuty:, :cutx, :] = image_datas[1][cuty:, :cutx, :]
+        new_image[cuty:, cutx:, :] = image_datas[2][cuty:, cutx:, :]
+        new_image[:cuty, cutx:, :] = image_datas[3][:cuty, cutx:, :]
+
+        # 对图像进行色域变换
+        r = np.random.uniform(-1, 1, 3) * [self.hue, self.sat, self.val] + 1
+        # 将图像转到HSV上
+        hue, sat, val = cv2.split(cv2.cvtColor(new_image, cv2.COLOR_RGB2HSV))
+        dtype = new_image.dtype
+        # 应用变换
+        x = np.arange(0, 256, dtype=r.dtype)
+        lut_hue = ((x * r[0]) % 180).astype(dtype)
+        lut_sat = np.clip(x * r[1], 0, 255).astype(dtype)
+        lut_val = np.clip(x * r[2], 0, 255).astype(dtype)
+        new_image = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val)))
+        new_image = cv2.cvtColor(new_image, cv2.COLOR_HSV2RGB)
+
+        new_boxes = self.merge_bboxes(box_datas, cutx, cuty)
+
+        return new_image, new_boxes
 
     def merge_bboxes(self, bboxes, cutx, cuty):
         merge_bbox = []
