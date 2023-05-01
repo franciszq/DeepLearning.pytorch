@@ -10,8 +10,8 @@
 
 在终端运行
 ```commandline
-git clone https://github.com/calmisential/Detection.pytorch.git
-cd Detection.pytorch
+git clone https://github.com/calmisential/DeepLearning.pytorch.git
+cd DeepLearning.pytorch
 pip install -r requirements.txt
 ```
 
