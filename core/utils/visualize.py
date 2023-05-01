@@ -56,6 +56,8 @@ def show_detection_results(image_path, dataset_name, boxes, scores, class_indice
         image_with_boxes = painter.draw_boxes_on_image(ori_image, boxes, scores, class_ids=class_indices,
                                                        class_names=class_names)
     if save_result:
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         save_filename = os.path.join(save_dir, os.path.basename(image_path).split(".")[0] + f"@{now()}.jpg")
         # 保存检测结果
         cv2.imwrite(save_filename, image_with_boxes)

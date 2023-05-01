@@ -11,11 +11,11 @@ from core.utils.ckpt import CheckPoint
 # 配置文件路径
 CONFIG = "configs/yolo8_det_cfg.py"
 # 权重文件位置
-WEIGHTS = "saves/YOLOv8n_voc_final.pth"
+WEIGHTS = "saves/ultralytics/yolov8n_weights.pth"
 # 输入文件类型：视频还是图片
 TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表
-IMAGE_PATHS = ["test/2007_000032.jpg", "test/2007_000033.jpg", "test/000000000049.jpg"]
+IMAGE_PATHS = ["test/000000000139.jpg", "test/000000001584.jpg", "test/000000006471.jpg"]
 # 原视频路径
 SRC_VIDEO = "test/1.flv"
 # 目标视频路径
