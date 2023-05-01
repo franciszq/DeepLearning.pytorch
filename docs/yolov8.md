@@ -10,8 +10,9 @@
 6. 恢复训练方法：修改模型`yolo8_det_cfg.py`配置文件中`self.resume_training`和`self.last_epoch`参数，然后运行`train.py`。
 
 ## 效果展示
-![sample 1](https://github.com/calmisential/Detection.pytorch/blob/main/performance/2010_006598%402023-03-24-12-36-57.jpg) 
-![sample_2](https://github.com/calmisential/Detection.pytorch/blob/main/performance/2010_006639%402023-03-24-12-36-57.jpg)
+![sample 1](https://github.com/calmisential/DeepLearning.pytorch/blob/main/performance/000000000139%402023-05-01-11-52-17.jpg) 
+![sample_2](https://github.com/calmisential/DeepLearning.pytorch/blob/main/performance/000000001584%402023-05-01-11-52-17.jpg)
+![sample_3](https://github.com/calmisential/DeepLearning.pytorch/blob/main/performance/000000006471%402023-05-01-11-52-17.jpg)
 
 ## 在不同数据集上的表现
 
