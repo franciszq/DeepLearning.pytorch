@@ -65,30 +65,35 @@ class Loss:
     def __call__(self, preds, batch):
         loss = torch.zeros(3, device=self.device)  # box, cls, dfl
         feats = preds[1] if isinstance(preds, tuple) else preds
+        # (bs, 16*4, 8400), (bs, nc, 8400)
         pred_distri, pred_scores = torch.cat([xi.view(feats[0].shape[0], self.no, -1) for xi in feats], 2).split(
             (self.reg_max * 4, self.nc), 1)
 
-        pred_scores = pred_scores.permute(0, 2, 1).contiguous()
-        pred_distri = pred_distri.permute(0, 2, 1).contiguous()
+        pred_scores = pred_scores.permute(0, 2, 1).contiguous()  # (bs, 8400, nc)
+        pred_distri = pred_distri.permute(0, 2, 1).contiguous()  # (bs, 8400, 16*4)
 
         dtype = pred_scores.dtype
         batch_size = pred_scores.shape[0]
         imgsz = torch.tensor(feats[0].shape[2:], device=self.device, dtype=dtype) * self.stride[0]  # image size (h,w)
+        # anchor_points: torch.Size([8400, 2]), stride_tensor: torch.Size([8400, 1])
         anchor_points, stride_tensor = make_anchors(feats, self.stride, 0.5)
 
-        # targets
+        # targets shape: [N, 6]
         targets = torch.cat((batch['batch_idx'].view(-1, 1), batch['cls'].view(-1, 1), batch['bboxes']), 1)
+        # (bs, num_max_true_boxes, 5)
         targets = self.preprocess(targets.to(self.device), batch_size, scale_tensor=imgsz[[1, 0, 1, 0]])
+
         gt_labels, gt_bboxes = targets.split((1, 4), 2)  # cls, xyxy
         mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)
 
         # pboxes
-        pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, h*w, 4)
+        pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, 8400, 4)
 
+        # target_bboxes: [bs, 8400, 4], target_scores: [8, 8400, 80]
+        # fg_mask: torch.Size([8, 8400])
         _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
             pred_scores.detach().sigmoid(), (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
             anchor_points * stride_tensor, gt_labels, gt_bboxes, mask_gt)
-
         target_bboxes /= stride_tensor
         target_scores_sum = max(target_scores.sum(), 1)
 

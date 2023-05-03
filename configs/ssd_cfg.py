@@ -59,7 +59,7 @@ class Config:
             # 预训练模型的权重路径
             self.pretrained_weights = ""
             # 模型保存间隔
-            self.save_interval = 5
+            self.save_interval = 10
             # 每隔多少epoch在验证集上验证一次
             self.eval_interval = 0
             # 保存模型的文件夹
@@ -84,7 +84,6 @@ class Config:
         # 优化器
         def __init__(self):
             self.name = "Adam"
-            self.scheduler_name = "multi_step"
 
     class _Log:
         # 训练日志

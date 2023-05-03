@@ -5,7 +5,7 @@ import torch
 import xml.etree.ElementTree as ET
 from tqdm import tqdm
 
-from core.data.voc import get_voc_root_and_classes
+from core.data import get_voc_root_and_classes
 from core.metrics.mAP import get_map, get_coco_map
 from core.utils.image_process import read_image, letter_box, reverse_letter_box
 import torchvision.transforms.functional as TF
@@ -41,7 +41,7 @@ def evaluate_pipeline(model,
         if not os.path.exists(p):
             os.makedirs(p)
 
-    voc_root, voc_class_names = get_voc_root_and_classes("configs/voc.yaml")
+    voc_root, voc_class_names = get_voc_root_and_classes()
     if subset == 'val':
         image_ids = open(os.path.join(voc_root, "ImageSets", "Main", "val.txt"), mode='r').read().strip().split(
             '\n')

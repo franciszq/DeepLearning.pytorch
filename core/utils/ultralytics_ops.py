@@ -178,6 +178,7 @@ def non_max_suppression(
     if isinstance(prediction, (list, tuple)):  # YOLOv8 model in validation model, output = (inference_out, loss_out)
         prediction = prediction[0]  # select only inference output
 
+    # prediction: torch.Size([1, 84, 8400])
     device = prediction.device
     mps = 'mps' in device.type  # Apple MPS
     if mps:  # MPS not fully supported yet, convert tensors to CPU before NMS
@@ -186,7 +187,7 @@ def non_max_suppression(
     nc = nc or (prediction.shape[1] - 4)  # number of classes
     nm = prediction.shape[1] - nc - 4
     mi = 4 + nc  # mask start index
-    xc = prediction[:, 4:mi].amax(1) > conf_thres  # candidates
+    xc = prediction[:, 4:mi].amax(1) > conf_thres  # candidates  torch.bool shape: [1, 8400]
 
     # Settings
     # min_wh = 2  # (pixels) minimum box width and height
@@ -200,7 +201,7 @@ def non_max_suppression(
     for xi, x in enumerate(prediction):  # image index, image inference
         # Apply constraints
         # x[((x[:, 2:4] < min_wh) | (x[:, 2:4] > max_wh)).any(1), 4] = 0  # width-height
-        x = x.transpose(0, -1)[xc[xi]]  # confidence
+        x = x.transpose(0, -1)[xc[xi]]  # confidence  shape: [n, 84]
 
         # Cat apriori labels if autolabelling
         if labels and len(labels[xi]):
@@ -239,9 +240,11 @@ def non_max_suppression(
         x = x[x[:, 4].argsort(descending=True)[:max_nms]]  # sort by confidence and remove excess boxes
 
         # Batched NMS
-        c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
-        boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
-        i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
+        # c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
+        # boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
+        # i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
+        boxes, scores = x[:, :4], x[:, 4]
+        i = torchvision.ops.batched_nms(boxes, scores, idxs=x[:, 5], iou_threshold=iou_thres)
         i = i[:max_det]  # limit detections
         if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
             # Update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)

@@ -22,9 +22,9 @@ class Config:
         # 数据集
         def __init__(self):
             # 目标类别数，与数据集有关，对于voc是20，对于coco是80
-            self.num_classes = COCO_CFG["num_classes"]
+            self.num_classes = VOC_CFG["num_classes"]
             # 数据集名称，"voc"或者"coco"
-            self.dataset_name = COCO_CFG["name"]
+            self.dataset_name = VOC_CFG["name"]
 
     class _Train:
         # 训练参数
@@ -35,7 +35,7 @@ class Config:
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
-            self.epoch = 30
+            self.epoch = 100
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3

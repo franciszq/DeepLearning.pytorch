@@ -3,20 +3,16 @@ import numpy as np
 import xml.dom.minidom as xdom
 
 from torch.utils.data import Dataset
+
+from core.data import get_voc_root_and_classes
 from core.utils.image_process import read_image
-from core.utils.yaml_tools import load_yaml
-
-
-def get_voc_root_and_classes(voc_yaml):
-    cfg_dict = load_yaml(voc_yaml)
-    return cfg_dict["root"], cfg_dict["classes"]
 
 
 class Voc(Dataset):
     def __init__(self, train=True, transforms=None):
         super().__init__()
         # VOC数据集的根目录和类别名
-        self.root, self.class_names = get_voc_root_and_classes("configs/voc.yaml")
+        self.root, self.class_names = get_voc_root_and_classes()
         # 对(image, target)的变换
         self.transforms = transforms
         xmls_root = os.path.join(self.root, "Annotations")
