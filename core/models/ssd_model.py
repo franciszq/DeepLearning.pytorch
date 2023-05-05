@@ -59,19 +59,30 @@ class VGG(nn.Module):
 
 
 class ExtraLayer(nn.Module):
-    def __init__(self, c_in):
+    def __init__(self, c_in, type="300"):
         super(ExtraLayer, self).__init__()
+        assert type in ["300", "512"], f"Invalid type: {type}"
         self.conv1 = nn.Conv2d(c_in, 256, kernel_size=1, stride=1, padding=0)
         self.conv2 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1)
 
         self.conv3 = nn.Conv2d(512, 128, kernel_size=1, stride=1, padding=0)
         self.conv4 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
+        
+        if type == "300":
+            self.conv5 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
+            self.conv6 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=0)
 
-        self.conv5 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
-        self.conv6 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=0)
+            self.conv7 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
+            self.conv8 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=0)
+        else:
+            self.conv5 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
+            self.conv6 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
 
-        self.conv7 = nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=0)
-        self.conv8 = nn.Conv2d(128, 256, kernel_size=1, stride=1, padding=0)
+            self.conv7 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
+            self.conv8 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
+
+            self.conv9 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
+            self.conv10 = nn.Conv2d(128, 256, kernel_size=4, stride=1, padding=1)
 
     def forward(self, x):
         outputs = []
@@ -87,6 +98,11 @@ class ExtraLayer(nn.Module):
         x = self.conv7(x)
         x = self.conv8(x)
         outputs.append(x)  # (batch, 256, 1, 1)
+
+        if self.conv9 is not None and self.conv10 is not None:
+            x = self.conv9(x)
+            x = self.conv10(x)
+            outputs.append(x)
 
         return outputs
 
@@ -114,19 +130,13 @@ class SSD(nn.Module):
     def __init__(self, cfg: Config):
         super(SSD, self).__init__()
         self.num_classes = cfg.dataset.num_classes + 1
-        self.backbone_name = cfg.arch.backbone.lower()
+        self.input_size = cfg.arch.input_size[1]
         # 每个stage分支输出的feature map中每个像素位置处的先验框数量
         self.num_boxes_per_pixel = [len(ar) + 1 for ar in cfg.arch.aspect_ratios]
         self.feature_channels = cfg.arch.feature_channels
-
-        if self.backbone_name == "vgg16":
-            self.backbone = VGG(batch_norm=True, pretrained=cfg.train.pretrained)
-        elif self.backbone_name == "mobilenetv1":
-            self.backbone = MobileNetV1()
-        else:
-            raise ValueError(f"Invalid backbone name: {self.backbone_name}")
+        self.backbone = VGG(batch_norm=True, pretrained=cfg.train.pretrained)
         self.l2_norm = L2Normalize(n_channels=512, scale=20)
-        self.extras = ExtraLayer(c_in=1024)
+        self.extras = ExtraLayer(c_in=1024, type=str(self.input_size))
         self.locs, self.confs = self._make_locs_and_confs()
 
     def _make_locs_and_confs(self):
@@ -161,8 +171,8 @@ class SSD(nn.Module):
         x1 = self.l2_norm(x1)
         sources.append(x1)
         sources.append(x2)
-        o1, o2, o3, o4 = self.extras(x2)
-        sources.extend([o1, o2, o3, o4])
+        # o1, o2, o3, o4 = self.extras(x2)
+        sources.extend(self.extras(x2))
 
         for (x, l, c) in zip(sources, self.locs, self.confs):
             loc.append(l(x))

@@ -1,6 +1,60 @@
 from .dataset_cfg import COCO_CFG, VOC_CFG
 
 
+def get_ar(input_size: int):
+    """
+    :param input_size:
+    :return:
+    """
+    if input_size == 300:
+        return [[1, 2, 1.0 / 2],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2],
+                [1, 2, 1.0 / 2]]
+    else:
+        return [[1, 2, 1.0 / 2],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2, 3, 1.0 / 3],
+                [1, 2, 1.0 / 2],
+                [1, 2, 1.0 / 2]]
+
+
+def get_feature_shapes(input_size: int):
+    if input_size == 300:
+        return [38, 19, 10, 5, 3, 1]
+    else:
+        return [64, 32, 16, 8, 4, 2, 1]
+
+
+def get_feature_channels(input_size: int):
+    if input_size == 300:
+        return [512, 1024, 512, 256, 256, 256]
+    else:
+        return [512, 1024, 512, 256, 256, 256, 256]
+
+
+def get_anchor_sizes(input_size: int):
+    if input_size == 300:
+        return [30, 60, 111, 162, 213, 264, 315]
+    else:
+        return [20.48, 51.2, 133.12, 215.04, 296.96, 378.88, 460.8, 542.72]
+
+
+def check_input_size(input_size):
+    """
+    检查输入图片大小是否符合要求，输入图片大小必须是300或者512，
+    这是因为SSD的网络结构与输入图片大小有关
+    """
+    assert isinstance(input_size, tuple)
+    assert len(input_size) == 3
+    assert input_size[1] == 300 or input_size[1] == 512
+    assert input_size[2] == input_size[1]
+
+
 class Config:
     def __init__(self):
         self.arch = self._Arch()
@@ -13,21 +67,17 @@ class Config:
 
     class _Arch:
         def __init__(self):
-            self.backbone = "vgg16"   # 'vgg16' or 'mobilenetv1'
-            # 输入图片大小：(C, H, W)
-            self.input_size = (3, 300, 300)
+            # 输入图片大小：(3, 300, 300) 或 (3, 512, 512)
+            self.input_size = (3, 512, 512)
+            check_input_size(self.input_size)
+
             # 先验框的宽高比
-            self.aspect_ratios = [[1, 2, 1.0 / 2],
-                                  [1, 2, 1.0 / 2, 3, 1.0 / 3],
-                                  [1, 2, 1.0 / 2, 3, 1.0 / 3],
-                                  [1, 2, 1.0 / 2, 3, 1.0 / 3],
-                                  [1, 2, 1.0 / 2],
-                                  [1, 2, 1.0 / 2]]
+            self.aspect_ratios = get_ar(self.input_size[1])
             # ssd结构中6个特征层的输出通道数
-            self.feature_channels = [512, 1024, 512, 256, 256, 256]
-            self.feature_shapes = [38, 19, 10, 5, 3, 1]
+            self.feature_channels = get_feature_channels(self.input_size[1])
+            self.feature_shapes = get_feature_shapes(self.input_size[1])
             # 先验框的宽和高
-            self.anchor_sizes = [30, 60, 111, 162, 213, 264, 315]
+            self.anchor_sizes = get_anchor_sizes(self.input_size[1])
 
     class _Dataset:
         # 数据集
