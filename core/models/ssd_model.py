@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from configs.ssd_cfg import Config
-from core.models.mobilenet import MobileNetV1
 
 
 class VGG(nn.Module):
@@ -74,6 +73,9 @@ class ExtraLayer(nn.Module):
 
             self.conv7 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
             self.conv8 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=0)
+
+            self.conv9 = None
+            self.conv10 = None
         else:
             self.conv5 = nn.Conv2d(256, 128, kernel_size=1, stride=1, padding=0)
             self.conv6 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)

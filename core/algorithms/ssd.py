@@ -49,9 +49,12 @@ class Ssd:
 
     def build_model(self):
         """构建网络模型"""
-        model = SSD(self.cfg)
-        model_name = "SSD"
-        return model, model_name
+        if self.cfg.arch.backbone == "vgg":
+            return SSD(self.cfg), f"SSD{self.input_image_size[0]}_vgg"
+        elif self.cfg.arch.backbone == "mobilenetv2":
+            # TODO MobileNetV2作为骨干网络
+            pass
+
 
     def build_loss(self):
         """构建损失函数"""

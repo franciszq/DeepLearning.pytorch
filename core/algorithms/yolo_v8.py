@@ -83,14 +83,15 @@ class Loss:
         # (bs, num_max_true_boxes, 5)
         targets = self.preprocess(targets.to(self.device), batch_size, scale_tensor=imgsz[[1, 0, 1, 0]])
 
+        # (bs, num_max_true_boxes, 1), (bs, num_max_true_boxes, 4)
         gt_labels, gt_bboxes = targets.split((1, 4), 2)  # cls, xyxy
-        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)
+        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)   # (bs, num_max_true_boxes, 1)
 
         # pboxes
         pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, 8400, 4)
 
-        # target_bboxes: [bs, 8400, 4], target_scores: [8, 8400, 80]
-        # fg_mask: torch.Size([8, 8400])
+        # target_bboxes: [bs, 8400, 4], target_scores: [bs, 8400, 80]
+        # fg_mask: torch.Size([bs, 8400])
         _, target_bboxes, target_scores, fg_mask, _ = self.assigner(
             pred_scores.detach().sigmoid(), (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
             anchor_points * stride_tensor, gt_labels, gt_bboxes, mask_gt)

@@ -51,8 +51,9 @@ def check_input_size(input_size):
     """
     assert isinstance(input_size, tuple)
     assert len(input_size) == 3
-    assert input_size[1] == 300 or input_size[1] == 512
     assert input_size[2] == input_size[1]
+    assert input_size[1] == 300 or input_size[1] == 512
+    
 
 
 class Config:
@@ -67,8 +68,9 @@ class Config:
 
     class _Arch:
         def __init__(self):
+            self.backbone = "vgg"
             # 输入图片大小：(3, 300, 300) 或 (3, 512, 512)
-            self.input_size = (3, 512, 512)
+            self.input_size = (3, 300, 300)
             check_input_size(self.input_size)
 
             # 先验框的宽高比
